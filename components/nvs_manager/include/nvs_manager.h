@@ -1,6 +1,8 @@
 #ifndef NVS_MANAGER_H
 #define NVS_MANAGER_H
 
+#include <stddef.h>
+
 void nvs_manager_init(void);
 
 bool nvs_manager_set_str(
