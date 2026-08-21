@@ -3,4 +3,7 @@
 cmake_minimum_required(VERSION 3.22)
 
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
-project(sample_project)
+
+project(dune)
+
+littlefs_create_partition_image(storage "${PROJECT_DIR}/www" FLASH_IN_PROJECT)
