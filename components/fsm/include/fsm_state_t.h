@@ -1,0 +1,22 @@
+#ifndef FSM_STATE_T_H
+#define FSM_STATE_T_H
+
+typedef enum {
+    FSM_STATE_BOOT_INIT,
+    FSM_STATE_UNHOMED_IDLE,
+    FSM_STATE_HOMING,
+    FSM_STATE_IDLE,
+    FSM_STATE_STARTING,
+    FSM_STATE_RUNNING,
+    FSM_STATE_PAUSING,
+    FSM_STATE_PAUSED,
+    FSM_STATE_RESUMING,
+    FSM_STATE_STOPPING,
+    FSM_STATE_COMPLETE,
+    FSM_STATE_REBOOTING,
+    FSM_STATE_ERROR
+} fsm_state_t;
+
+const char* fsm_state_to_str(fsm_state_t);
+
+#endif // FSM_STATE_T_H
