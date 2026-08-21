@@ -1,6 +1,6 @@
 idf_component_register(
     SRCS 
-        "nvs.c" 
+        "nvs_manager.c" 
     INCLUDE_DIRS 
         "include"
     REQUIRES 

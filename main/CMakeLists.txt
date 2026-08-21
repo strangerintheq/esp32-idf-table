@@ -5,7 +5,7 @@ idf_component_register(
         "."
     REQUIRES 
         fsm 
-        nvs 
+        nvs_manager 
         network
         server
 )
