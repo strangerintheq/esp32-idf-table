@@ -21,8 +21,8 @@ extern fsm_state_t fsm_calc_next_state(
 static void fsm_process_message(const fsm_event_t* event) {
     
     const char* evt = event->type == FSM_EVENT_TYPE_USER_COMMAND ? 
-        user_event_to_str(event->user_event) : 
-        system_event_to_str(event->system_event);
+        fsm_user_event_to_str(event->user_event) : 
+        fsm_system_event_to_str(event->system_event);
 
     ESP_LOGI(TAG, "processing event: %s", evt);
 
@@ -53,14 +53,14 @@ void fsm_init(void) {
     ESP_LOGI(TAG, "initialized");
 }
 
-void fsm_post_user_event(user_event_t event, void* arg) {
+void fsm_post_user_event(fsm_user_event_t event, void* arg) {
     if (xFsmQueue == NULL) 
         return;
     fsm_event_t msg = { .type = FSM_EVENT_TYPE_USER_COMMAND, .user_event = event, .arg = arg };
     xQueueSend(xFsmQueue, &msg, 0);
 }
 
-void fsm_post_system_event(system_event_t event, void* arg) {
+void fsm_post_system_event(fsm_system_event_t event, void* arg) {
     if (xFsmQueue == NULL) 
         return;
     fsm_event_t msg = { .type = FSM_EVENT_TYPE_SYSTEM_REPORT, .system_event = event, .arg = arg };

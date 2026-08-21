@@ -1,8 +1,8 @@
 #ifndef FSM_EVENT_T_H
 #define FSM_EVENT_T_H
 
-#include "user_event_t.h"
-#include "system_event_t.h"
+#include "fsm_user_event_t.h"
+#include "fsm_system_event_t.h"
 
 typedef enum {
     FSM_EVENT_TYPE_USER_COMMAND,
@@ -11,8 +11,8 @@ typedef enum {
 
 typedef struct {
     fsm_event_type_t type;
-    user_event_t user_event;
-    system_event_t system_event;
+    fsm_user_event_t user_event;
+    fsm_system_event_t system_event;
     void* arg;
 } fsm_event_t;
 

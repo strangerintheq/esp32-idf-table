@@ -3,20 +3,21 @@
 
 fsm_state_t handle_system_event(
     const fsm_state_t state, 
-    const system_event_t event
+    const fsm_system_event_t event
 ) {
-    if (event == SYSTEM_EVENT_ERROR) {
+    if (event == FSM_SYSTEM_EVENT_ERROR) {
         return FSM_STATE_ERROR;
     }
+
 
     return state;
 }
 
 fsm_state_t handle_user_event(
     const fsm_state_t state, 
-    const user_event_t event
+    const fsm_user_event_t event
 ) {
-    if (event == USER_EVENT_REBOOT) {
+    if (event == FSM_USER_EVENT_REBOOT) {
         return FSM_STATE_REBOOTING;
     }
 
