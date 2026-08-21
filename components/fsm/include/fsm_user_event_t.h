@@ -6,6 +6,7 @@ typedef enum {
     FSM_USER_EVENT_PAUSE,
     FSM_USER_EVENT_RESUME,
     FSM_USER_EVENT_STOP,
+    FSM_USER_EVENT_START_HOMIG,
     FSM_USER_EVENT_REBOOT
 } fsm_user_event_t;
 
