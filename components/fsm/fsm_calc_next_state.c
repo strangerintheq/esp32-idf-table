@@ -58,7 +58,7 @@ fsm_state_t handle_user_event(
     if (event == FSM_USER_EVENT_REBOOT) {
         return FSM_STATE_REBOOTING;
     }
-    switch (event) {
+    switch (state) {
 
         case FSM_STATE_RUNNING:
             if (event == FSM_USER_EVENT_STOP)
