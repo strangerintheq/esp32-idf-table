@@ -1,3 +1,11 @@
-idf_component_register(SRCS "main.c"
-                       INCLUDE_DIRS "."
-                       REQUIRES fsm server)
+idf_component_register(
+    SRCS 
+        "main.c"
+    INCLUDE_DIRS 
+        "."
+    REQUIRES 
+        fsm 
+        nvs 
+        network
+        server
+)
