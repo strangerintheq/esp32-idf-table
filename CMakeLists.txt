@@ -7,3 +7,5 @@ include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 project(dune)
 
 littlefs_create_partition_image(storage "${PROJECT_DIR}/www" FLASH_IN_PROJECT)
+
+nvs_create_partition_image(nvs nvs_factory.csv FLASH_IN_PROJECT)

@@ -9,7 +9,7 @@
 
 void app_main(void) {
     fsm_init();
-    vTaskDelay(pdMS_TO_TICKS(10));
+    vTaskDelay(pdMS_TO_TICKS(50));
     nvs_manager_init();
     network_init();
     server_init();
