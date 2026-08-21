@@ -6,7 +6,7 @@
 #include <fsm_event_t.h>
 
 static const char *TAG = "FSM_CORE";
-static fsm_state_t current_state = FSM_STATE_BOOT_INIT;
+static fsm_state_t current_state;
 static QueueHandle_t xFsmQueue = NULL;
 
 fsm_state_t fsm_get_current_state(void) {
@@ -48,7 +48,7 @@ static void vFsmTask(void *pvParameters) {
 
 void fsm_init(void) {
     xFsmQueue = xQueueCreate(10, sizeof(fsm_event_t));
-    current_state = FSM_STATE_BOOT_INIT;
+    current_state = FSM_STATE_INITIALIZING;
     xTaskCreatePinnedToCore(vFsmTask, "fsm_task", 4096, NULL, 15, NULL, 1);
     ESP_LOGI(TAG, "initialized");
 }
@@ -56,13 +56,21 @@ void fsm_init(void) {
 void fsm_post_user_event(fsm_user_event_t event, void* arg) {
     if (xFsmQueue == NULL) 
         return;
-    fsm_event_t msg = { .type = FSM_EVENT_TYPE_USER_COMMAND, .user_event = event, .arg = arg };
+    fsm_event_t msg = { 
+        .type = FSM_EVENT_TYPE_USER_COMMAND, 
+        .user_event = event, 
+        .arg = arg 
+    };
     xQueueSend(xFsmQueue, &msg, 0);
 }
 
 void fsm_post_system_event(fsm_system_event_t event, void* arg) {
     if (xFsmQueue == NULL) 
         return;
-    fsm_event_t msg = { .type = FSM_EVENT_TYPE_SYSTEM_REPORT, .system_event = event, .arg = arg };
+    fsm_event_t msg = { 
+        .type = FSM_EVENT_TYPE_SYSTEM_REPORT, 
+        .system_event = event, 
+        .arg = arg 
+    };
     xQueueSend(xFsmQueue, &msg, 0);
 }
