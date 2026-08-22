@@ -4,14 +4,20 @@
 
 #include <fsm.h>
 #include <nvs_manager.h>
+#include <storage.h>
 #include <network.h>
 #include <server.h>
 
+void delay(){
+    vTaskDelay(pdMS_TO_TICKS(50));
+}
+
 void app_main(void) {
     fsm_init();
-    vTaskDelay(pdMS_TO_TICKS(50));
+    delay();
     nvs_manager_init();
     network_init();
+    storage_init();
     server_init();
 
     // if (server_start() == true) {
