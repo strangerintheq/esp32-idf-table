@@ -1,6 +1,6 @@
 key,type,encoding,value
 wifi_store,namespace,,
-mode,data,string,ap
+mode,data,string,wifi
 wifi_ssid,data,string,tluafed
 wifi_password,data,string,0123456789
 ap_ssid,data,string,Dune

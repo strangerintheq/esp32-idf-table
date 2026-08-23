@@ -1,8 +1,11 @@
 idf_component_register(
     SRCS 
         "server.c"
+        "static.c"
+        "ws.c"
     INCLUDE_DIRS 
         "include" 
     REQUIRES
-        esp_http_server      
+        esp_http_server 
+        storage     
 )

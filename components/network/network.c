@@ -106,7 +106,7 @@ void network_init(void) {
     // =================================================================
     // 3. ЗАПУСК ВЫБРАННОЙ СТРАТЕГИИ НА ОСНОВЕ РЕЖИМА ИЗ NVS
     // =================================================================
-    char nvs_mode[4] = {0};
+    char nvs_mode[8] = {0};
     nvs_manager_get_str("wifi_store", "mode", nvs_mode, sizeof(nvs_mode));
 
     if (strcmp(nvs_mode, "wifi") == 0) {
