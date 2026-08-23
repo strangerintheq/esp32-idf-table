@@ -3,6 +3,7 @@ idf_component_register(
         "server.c"
         "static.c"
         "ws.c"
+        "api.c"
     INCLUDE_DIRS 
         "include" 
     REQUIRES

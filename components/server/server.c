@@ -10,6 +10,7 @@ static const char *TAG = "WEB_SERVER";
 static httpd_handle_t server_handle = NULL;
 
 extern void ws_init(httpd_handle_t);
+extern void api_init(httpd_handle_t);
 extern void static_init(httpd_handle_t);
 
 void server_init(void) {
@@ -26,6 +27,7 @@ void server_init(void) {
     }
     
     ws_init(server_handle);
+    api_init(server_handle);
     static_init(server_handle);
 
     ESP_LOGI(TAG, "Started.");
