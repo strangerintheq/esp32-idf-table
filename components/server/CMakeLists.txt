@@ -8,5 +8,6 @@ idf_component_register(
         "include" 
     REQUIRES
         esp_http_server 
-        storage     
+        storage   
+        network 
 )

@@ -2,10 +2,25 @@
 #include "nvs_manager.h"
 #include "esp_log.h"
 #include "esp_wifi.h"
-#include <string.h>
+#include "cJSON.h"
+
+#define NETWORK_NVS_NAMESPACE "wifi_store"
+#define NETWORK_NVS_KEY_MODE "mode"
+#define NETWORK_NVS_KEY_WIFI_SSID "wifi_ssid"
+#define NETWORK_NVS_KEY_WIFI_PASSWORD "wifi_password"
+#define NETWORK_NVS_KEY_AP_SSID "ap_ssid"
+#define NETWORK_NVS_KEY_AP_PASSWORD "ap_password"
 
 static const char *TAG = "NETWORK";
 static int s_retry_num = 0;
+
+typedef struct {
+    char mode[8];
+    char wifi_ssid[32];
+    char wifi_password[64];
+    char ap_ssid[32];
+    char ap_password[64];
+} network_settings_t;
 
 static void network_start_sta(void) {
     s_retry_num = 0;
@@ -51,6 +66,28 @@ static void wifi_event_handler(
     }
 }
 
+static network_settings_t read_settings(void) {
+
+    network_settings_t network_settings = {0};
+
+    nvs_manager_get_str(NETWORK_NVS_NAMESPACE, NETWORK_NVS_KEY_MODE, 
+        network_settings.mode, sizeof(network_settings.mode));
+
+    nvs_manager_get_str(NETWORK_NVS_NAMESPACE, NETWORK_NVS_KEY_AP_SSID, 
+        network_settings.ap_ssid, sizeof(network_settings.ap_ssid));
+
+    nvs_manager_get_str(NETWORK_NVS_NAMESPACE, NETWORK_NVS_KEY_AP_PASSWORD, 
+        network_settings.ap_password, sizeof(network_settings.ap_password));
+
+    nvs_manager_get_str(NETWORK_NVS_NAMESPACE, NETWORK_NVS_KEY_WIFI_SSID, 
+        network_settings.wifi_ssid, sizeof(network_settings.wifi_ssid));
+
+    nvs_manager_get_str(NETWORK_NVS_NAMESPACE, NETWORK_NVS_KEY_WIFI_PASSWORD, 
+        network_settings.wifi_password, sizeof(network_settings.wifi_password));
+
+    return network_settings;
+}
+
 void network_init(void) {
     ESP_LOGI(TAG, "Старт оркестрации сетевых интерфейсов...");
 
@@ -69,9 +106,6 @@ void network_init(void) {
 
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_APSTA));
 
-    // =================================================================
-    // 2. ПРЕДВАРИТЕЛЬНАЯ ЗАГРУЗКА КОНФИГУРАЦИЙ В ПАМЯТЬ ЧИПА (ОДИН РАЗ)
-    // =================================================================
     
     // Читаем и сразу скармливаем чипу настройки резервной точки доступа Dune (AP)
     wifi_config_t wifi_ap_config = {
@@ -81,37 +115,40 @@ void network_init(void) {
             .authmode = WIFI_AUTH_WPA2_PSK 
         }
     };
-    char ap_ssid[32] = {0};
-    char ap_pass[64] = {0};
-    nvs_manager_get_str("wifi_store", "ap_ssid", ap_ssid, sizeof(ap_ssid));
-    nvs_manager_get_str("wifi_store", "ap_password", ap_pass, sizeof(ap_pass));
-    
-    strncpy((char*)wifi_ap_config.ap.ssid, ap_ssid, sizeof(wifi_ap_config.ap.ssid));
-    wifi_ap_config.ap.ssid_len = strlen(ap_ssid);
-    strncpy((char*)wifi_ap_config.ap.password, ap_pass, sizeof(wifi_ap_config.ap.password));
+  
+    network_settings_t network_settings = read_settings();
+
+    strncpy((char*)wifi_ap_config.ap.ssid, network_settings.ap_ssid, sizeof(wifi_ap_config.ap.ssid));
+    wifi_ap_config.ap.ssid_len = strlen(network_settings.ap_ssid);
+    strncpy((char*)wifi_ap_config.ap.password, network_settings.ap_password, sizeof(wifi_ap_config.ap.password));
     ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_AP, &wifi_ap_config));
 
     // Читаем и сразу скармливаем чипу настройки домашнего роутера (STA)
     wifi_config_t wifi_sta_config = {0};
-    char wifi_ssid[32] = {0};
-    char wifi_pass[64] = {0};
-    nvs_manager_get_str("wifi_store", "wifi_ssid", wifi_ssid, sizeof(wifi_ssid));
-    nvs_manager_get_str("wifi_store", "wifi_password", wifi_pass, sizeof(wifi_pass));
+  
     
-    strncpy((char*)wifi_sta_config.sta.ssid, wifi_ssid, sizeof(wifi_sta_config.sta.ssid));
-    strncpy((char*)wifi_sta_config.sta.password, wifi_pass, sizeof(wifi_sta_config.sta.password));
+    strncpy((char*)wifi_sta_config.sta.ssid, network_settings.wifi_ssid, sizeof(wifi_sta_config.sta.ssid));
+    strncpy((char*)wifi_sta_config.sta.password, network_settings.wifi_password, sizeof(wifi_sta_config.sta.password));
     wifi_sta_config.sta.threshold.authmode = WIFI_AUTH_WPA2_PSK;
     ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &wifi_sta_config));
 
-    // =================================================================
-    // 3. ЗАПУСК ВЫБРАННОЙ СТРАТЕГИИ НА ОСНОВЕ РЕЖИМА ИЗ NVS
-    // =================================================================
-    char nvs_mode[8] = {0};
-    nvs_manager_get_str("wifi_store", "mode", nvs_mode, sizeof(nvs_mode));
 
-    if (strcmp(nvs_mode, "wifi") == 0) {
+    if (strcmp(network_settings.mode, "wifi") == 0) {
         network_start_sta();
     } else {
         network_start_ap();
     }
+}
+
+char* network_get_settings() {
+    network_settings_t s = read_settings();
+    cJSON *root = cJSON_CreateObject();
+    cJSON_AddStringToObject(root, NETWORK_NVS_KEY_MODE, s.mode);
+    cJSON_AddStringToObject(root, NETWORK_NVS_KEY_WIFI_SSID, s.wifi_ssid);
+    cJSON_AddStringToObject(root, NETWORK_NVS_KEY_WIFI_PASSWORD, s.wifi_password);
+    cJSON_AddStringToObject(root, NETWORK_NVS_KEY_AP_SSID, s.ap_ssid);
+    cJSON_AddStringToObject(root, NETWORK_NVS_KEY_AP_PASSWORD, s.ap_password);
+    char *json_str = cJSON_PrintUnformatted(root); 
+    cJSON_Delete(root);
+    return json_str; // important: call 'free()' after usage!
 }

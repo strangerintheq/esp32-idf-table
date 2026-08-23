@@ -3,4 +3,6 @@
 
 void network_init(void);
 
+char* network_get_settings(void);
+
 #endif
