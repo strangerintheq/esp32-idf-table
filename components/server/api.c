@@ -3,6 +3,8 @@
 #include "nvs_manager.h"
 #include "network.h"
 
+static const char *TAG = "[server/api.c]";
+
 static esp_err_t get_network_settings(httpd_req_t *req) {
     char* json = network_get_settings();
     if (json == NULL) {
@@ -27,7 +29,10 @@ static void register_post(
         .handler = handler,
         .user_ctx = NULL,
     };
-    httpd_register_uri_handler(server_handle, &static_files_uri);
+    esp_err_t ret = httpd_register_uri_handler(server_handle, &static_files_uri);
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to register %s: %d", uri, ret);
+    }
 }
 
 void api_init(httpd_handle_t server_handle) {
