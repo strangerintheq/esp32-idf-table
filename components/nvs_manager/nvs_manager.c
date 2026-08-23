@@ -4,7 +4,7 @@
 #include "nvs.h"
 #include <string.h>
 
-static const char *TAG = "NVS_MANAGER";
+static const char *TAG = "[nvs_manager/nvs_manager.c]";
 
 void nvs_manager_init(void) {
     ESP_LOGI(TAG, "Initializing NVS...");

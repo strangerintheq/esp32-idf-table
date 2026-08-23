@@ -6,7 +6,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
 
-static const char *TAG = "[STORAGE]";
+static const char *TAG = "[storage/storage.c]";
 #define MAX_OPEN_FILES 10
 
 typedef struct {

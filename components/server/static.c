@@ -2,7 +2,7 @@
 #include "esp_http_server.h"
 #include "storage.h"
 
-static const char *TAG = "SERVER_STATIC";
+static const char *TAG = "[server/static.c]";
 
 #define FILE_CHUNK_SIZE 1024
 #define FILE_PATH_SIZE 522 

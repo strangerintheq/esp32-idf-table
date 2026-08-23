@@ -1,7 +1,7 @@
 #include "esp_http_server.h" 
 #include "esp_log.h"
 
-static const char *TAG = "WEB_SOCKET";
+static const char *TAG = "[server/ws.c]";
 
 #define MAX_WS_CLIENTS 10
 

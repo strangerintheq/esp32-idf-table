@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-static const char *TAG = "WEB_SERVER";
+static const char *TAG = "[server/server.c]";
 
 static httpd_handle_t server_handle = NULL;
 

@@ -5,7 +5,7 @@
 #include "freertos/queue.h"
 #include <fsm_event_t.h>
 
-static const char *TAG = "FSM_CORE";
+static const char *TAG = "[fsm/fsm.c]";
 static fsm_state_t current_state;
 static QueueHandle_t xFsmQueue = NULL;
 
