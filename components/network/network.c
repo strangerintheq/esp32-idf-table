@@ -11,7 +11,7 @@
 #define NETWORK_NVS_KEY_AP_SSID "ap_ssid"
 #define NETWORK_NVS_KEY_AP_PASSWORD "ap_password"
 
-static const char *TAG = "NETWORK";
+static const char *TAG = "[network/network.c]";
 static int s_retry_num = 0;
 
 typedef struct {
@@ -66,26 +66,12 @@ static void wifi_event_handler(
     }
 }
 
-static network_settings_t read_settings(void) {
-
-    network_settings_t network_settings = {0};
-
-    nvs_manager_get_str(NETWORK_NVS_NAMESPACE, NETWORK_NVS_KEY_MODE, 
-        network_settings.mode, sizeof(network_settings.mode));
-
-    nvs_manager_get_str(NETWORK_NVS_NAMESPACE, NETWORK_NVS_KEY_AP_SSID, 
-        network_settings.ap_ssid, sizeof(network_settings.ap_ssid));
-
-    nvs_manager_get_str(NETWORK_NVS_NAMESPACE, NETWORK_NVS_KEY_AP_PASSWORD, 
-        network_settings.ap_password, sizeof(network_settings.ap_password));
-
-    nvs_manager_get_str(NETWORK_NVS_NAMESPACE, NETWORK_NVS_KEY_WIFI_SSID, 
-        network_settings.wifi_ssid, sizeof(network_settings.wifi_ssid));
-
-    nvs_manager_get_str(NETWORK_NVS_NAMESPACE, NETWORK_NVS_KEY_WIFI_PASSWORD, 
-        network_settings.wifi_password, sizeof(network_settings.wifi_password));
-
-    return network_settings;
+static void read_settings(network_settings_t *s) {
+    nvs_manager_get_str(NETWORK_NVS_NAMESPACE, NETWORK_NVS_KEY_MODE, s->mode, sizeof(s->mode));
+    nvs_manager_get_str(NETWORK_NVS_NAMESPACE, NETWORK_NVS_KEY_AP_SSID, s->ap_ssid, sizeof(s->ap_ssid));
+    nvs_manager_get_str(NETWORK_NVS_NAMESPACE, NETWORK_NVS_KEY_AP_PASSWORD, s->ap_password, sizeof(s->ap_password));
+    nvs_manager_get_str(NETWORK_NVS_NAMESPACE, NETWORK_NVS_KEY_WIFI_SSID, s->wifi_ssid, sizeof(s->wifi_ssid));
+    nvs_manager_get_str(NETWORK_NVS_NAMESPACE, NETWORK_NVS_KEY_WIFI_PASSWORD, s->wifi_password, sizeof(s->wifi_password));
 }
 
 void network_init(void) {
@@ -116,24 +102,25 @@ void network_init(void) {
         }
     };
   
-    network_settings_t network_settings = read_settings();
+    network_settings_t s;
+    read_settings(&s);
 
-    strncpy((char*)wifi_ap_config.ap.ssid, network_settings.ap_ssid, sizeof(wifi_ap_config.ap.ssid));
-    wifi_ap_config.ap.ssid_len = strlen(network_settings.ap_ssid);
-    strncpy((char*)wifi_ap_config.ap.password, network_settings.ap_password, sizeof(wifi_ap_config.ap.password));
+    strncpy((char*)wifi_ap_config.ap.ssid, s.ap_ssid, sizeof(wifi_ap_config.ap.ssid));
+    wifi_ap_config.ap.ssid_len = strlen(s.ap_ssid);
+    strncpy((char*)wifi_ap_config.ap.password, s.ap_password, sizeof(wifi_ap_config.ap.password));
     ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_AP, &wifi_ap_config));
 
     // Читаем и сразу скармливаем чипу настройки домашнего роутера (STA)
     wifi_config_t wifi_sta_config = {0};
   
     
-    strncpy((char*)wifi_sta_config.sta.ssid, network_settings.wifi_ssid, sizeof(wifi_sta_config.sta.ssid));
-    strncpy((char*)wifi_sta_config.sta.password, network_settings.wifi_password, sizeof(wifi_sta_config.sta.password));
+    strncpy((char*)wifi_sta_config.sta.ssid, s.wifi_ssid, sizeof(wifi_sta_config.sta.ssid));
+    strncpy((char*)wifi_sta_config.sta.password, s.wifi_password, sizeof(wifi_sta_config.sta.password));
     wifi_sta_config.sta.threshold.authmode = WIFI_AUTH_WPA2_PSK;
     ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &wifi_sta_config));
 
 
-    if (strcmp(network_settings.mode, "wifi") == 0) {
+    if (strcmp(s.mode, "wifi") == 0) {
         network_start_sta();
     } else {
         network_start_ap();
@@ -141,7 +128,8 @@ void network_init(void) {
 }
 
 char* network_get_settings() {
-    network_settings_t s = read_settings();
+    network_settings_t s;
+    read_settings(&s);
     cJSON *root = cJSON_CreateObject();
     cJSON_AddStringToObject(root, NETWORK_NVS_KEY_MODE, s.mode);
     cJSON_AddStringToObject(root, NETWORK_NVS_KEY_WIFI_SSID, s.wifi_ssid);
