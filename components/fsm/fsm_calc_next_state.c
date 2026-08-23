@@ -1,7 +1,7 @@
 #include "fsm_state_t.h"
 #include "fsm_event_t.h"
 
-fsm_state_t handle_system_event(
+static fsm_state_t handle_system_event(
     const fsm_state_t state, 
     const fsm_system_event_t event
 ) {
@@ -51,7 +51,7 @@ fsm_state_t handle_system_event(
     return state;
 }
 
-fsm_state_t handle_user_event(
+static fsm_state_t handle_user_event(
     const fsm_state_t state, 
     const fsm_user_event_t event
 ) {

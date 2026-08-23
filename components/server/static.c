@@ -24,7 +24,7 @@ static esp_err_t set_content_type_from_file(
     return httpd_resp_set_type(req, "text/plain");
 }
 
-esp_err_t static_file_get_handler(httpd_req_t *req) {
+static esp_err_t static_file_get_handler(httpd_req_t *req) {
 
     if (strcmp(req->uri, "/ws") == 0) {
         ESP_LOGI(TAG, "Skipping /ws in static handler (WebSocket)");

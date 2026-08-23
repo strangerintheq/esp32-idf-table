@@ -8,7 +8,7 @@
 #include <network.h>
 #include <server.h>
 
-void delay(){
+static void delay(){
     vTaskDelay(pdMS_TO_TICKS(50));
 }
 
