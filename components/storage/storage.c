@@ -19,6 +19,14 @@ typedef struct {
 static file_entry_t open_files[MAX_OPEN_FILES];
 static SemaphoreHandle_t files_mutex = NULL;
 
+static bool lock() {
+    return xSemaphoreTake(files_mutex, portMAX_DELAY) == pdTRUE;
+}
+
+static void unlock() {
+    xSemaphoreGive(files_mutex);
+}
+
 static int find_free_slot(void) {
     for (int i = 0; i < MAX_OPEN_FILES; i++)
         if (!open_files[i].is_open) return i;
@@ -66,18 +74,18 @@ void storage_init(void) {
 
 int storage_open(const char* filepath, const char* mode) {
     if (filepath == NULL || mode == NULL || files_mutex == NULL) return -1;
-    if (xSemaphoreTake(files_mutex, portMAX_DELAY) != pdTRUE) return -1;
+    if (!lock()) return -1;
 
     int slot = find_free_slot();
     if (slot == -1) {
         ESP_LOGE(TAG, "Max files (%d)", MAX_OPEN_FILES);
-        xSemaphoreGive(files_mutex);
+        unlock();
         return -1;
     }
     FILE *file = fopen(filepath, mode);
     if (file == NULL) {
         ESP_LOGE(TAG, "Can't open: %s", filepath);
-        xSemaphoreGive(files_mutex);
+        unlock();
         return -1;
     }
     open_files[slot].file = file;
@@ -86,85 +94,85 @@ int storage_open(const char* filepath, const char* mode) {
     open_files[slot].is_open = true;
     open_files[slot].size = get_file_size(file);
     ESP_LOGI(TAG, "Opened: %s (handle: %d)", filepath, slot);
-    xSemaphoreGive(files_mutex);
+    unlock();
     return slot;
 }
 
 size_t storage_read(int handle, void* buffer, size_t size) {
     if (buffer == NULL || size == 0 || files_mutex == NULL) return 0;
-    if (xSemaphoreTake(files_mutex, portMAX_DELAY) != pdTRUE) return 0;
+    if (!lock()) return 0;
     if (!is_handle_valid(handle)) {
         ESP_LOGE(TAG, "Invalid handle: %d", handle);
-        xSemaphoreGive(files_mutex);
+        unlock();
         return 0;
     }
     size_t read = fread(buffer, 1, size, open_files[handle].file);
-    xSemaphoreGive(files_mutex);
+    unlock();
     return read;
 }
 
 size_t storage_write(int handle, const void* buffer, size_t size) {
     if (buffer == NULL || size == 0 || files_mutex == NULL) return 0;
-    if (xSemaphoreTake(files_mutex, portMAX_DELAY) != pdTRUE) return 0;
+    if (!lock()) return 0;
     if (!is_handle_valid(handle)) {
         ESP_LOGE(TAG, "Invalid handle: %d", handle);
-        xSemaphoreGive(files_mutex);
+        unlock();
         return 0;
     }
     size_t written = fwrite(buffer, 1, size, open_files[handle].file);
     if (written > 0) open_files[handle].size = get_file_size(open_files[handle].file);
-    xSemaphoreGive(files_mutex);
+    unlock();
     return written;
 }
 
 bool storage_seek(int handle, long offset, int whence) {
-    if (files_mutex == NULL || xSemaphoreTake(files_mutex, portMAX_DELAY) != pdTRUE) return false;
+    if (files_mutex == NULL || !lock()) return false;
     if (!is_handle_valid(handle)) {
         ESP_LOGE(TAG, "Invalid handle: %d", handle);
-        xSemaphoreGive(files_mutex);
+        unlock();
         return false;
     }
     int res = fseek(open_files[handle].file, offset, whence);
-    xSemaphoreGive(files_mutex);
+    unlock();
     return (res == 0);
 }
 
 long storage_tell(int handle) {
-    if (files_mutex == NULL || xSemaphoreTake(files_mutex, portMAX_DELAY) != pdTRUE) return -1;
+    if (files_mutex == NULL || !lock()) return -1;
     if (!is_handle_valid(handle)) {
         ESP_LOGE(TAG, "Invalid handle: %d", handle);
-        xSemaphoreGive(files_mutex);
+        unlock();
         return -1;
     }
     long pos = ftell(open_files[handle].file);
-    xSemaphoreGive(files_mutex);
+    unlock();
     return pos;
 }
 
 size_t storage_get_size(int handle) {
-    if (files_mutex == NULL || xSemaphoreTake(files_mutex, portMAX_DELAY) != pdTRUE) return 0;
+    if (files_mutex == NULL || !lock()) return 0;
     if (!is_handle_valid(handle)) {
         ESP_LOGE(TAG, "Invalid handle: %d", handle);
-        xSemaphoreGive(files_mutex);
+        unlock();
         return 0;
     }
     size_t size = open_files[handle].size;
-    xSemaphoreGive(files_mutex);
+    unlock();
     return size;
 }
 
 bool storage_is_open(int handle){
-    if (files_mutex == NULL || xSemaphoreTake(files_mutex, portMAX_DELAY) != pdTRUE) return false;
+    if (files_mutex == NULL || !lock()) return false;
     bool open = is_handle_valid(handle);
-    xSemaphoreGive(files_mutex);
+    unlock();
     return open;
 }
 
 void storage_close(int handle) {
-    if (files_mutex == NULL || xSemaphoreTake(files_mutex, portMAX_DELAY) != pdTRUE) return;
+    if (files_mutex == NULL || !lock()) return;
     if (!is_handle_valid(handle)) {
         ESP_LOGW(TAG, "Invalid handle: %d", handle);
-        xSemaphoreGive(files_mutex);
+        unlock();
         return;
     }
     if (open_files[handle].file != NULL) {
@@ -175,11 +183,11 @@ void storage_close(int handle) {
     open_files[handle].is_open = false;
     open_files[handle].size = 0;
     open_files[handle].path[0] = '\0';
-    xSemaphoreGive(files_mutex);
+    unlock();
 }
 
 void storage_close_all(void) {
-    if (files_mutex == NULL || xSemaphoreTake(files_mutex, portMAX_DELAY) != pdTRUE) return;
+    if (files_mutex == NULL || !lock()) return;
     for (int i = 0; i < MAX_OPEN_FILES; i++) {
         if (open_files[i].is_open && open_files[i].file != NULL) {
             fclose(open_files[i].file);
@@ -190,5 +198,5 @@ void storage_close_all(void) {
             open_files[i].path[0] = '\0';
         }
     }
-    xSemaphoreGive(files_mutex);
+    unlock();
 }

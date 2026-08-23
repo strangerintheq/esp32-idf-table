@@ -16,19 +16,19 @@ typedef struct {
 } ws_client_t;
 
 // clients array
-ws_client_t ws_clients[MAX_WS_CLIENTS];
+static ws_client_t ws_clients[MAX_WS_CLIENTS];
 
-SemaphoreHandle_t ws_clients_mutex = NULL;
+static SemaphoreHandle_t ws_clients_mutex = NULL;
 
-void lock() {
+static void lock() {
     xSemaphoreTake(ws_clients_mutex, portMAX_DELAY);
 }
 
-void unlock() {
+static void unlock() {
     xSemaphoreGive(ws_clients_mutex);
 }
 
-esp_err_t add_ws_client(httpd_req_t *req) {
+static esp_err_t add_ws_client(httpd_req_t *req) {
     lock();
     int fd = httpd_req_to_sockfd(req); 
     for (int i = 0; i < MAX_WS_CLIENTS; i++) {
@@ -45,7 +45,7 @@ esp_err_t add_ws_client(httpd_req_t *req) {
     return ESP_FAIL;
 }
 
-void remove_ws_client(httpd_req_t *req) {
+static void remove_ws_client(httpd_req_t *req) {
     lock();
     int fd = httpd_req_to_sockfd(req);
     for (int i = 0; i < MAX_WS_CLIENTS; i++) {
@@ -60,7 +60,7 @@ void remove_ws_client(httpd_req_t *req) {
     unlock();
 }
 
-esp_err_t message_handler(httpd_req_t *req) {
+static esp_err_t message_handler(httpd_req_t *req) {
     httpd_ws_frame_t ws_pkt;
     uint8_t *buf = NULL;
     memset(&ws_pkt, 0, sizeof(httpd_ws_frame_t));
