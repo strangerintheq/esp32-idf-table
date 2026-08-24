@@ -1,4 +1,5 @@
 #include <fsm_user_event_t.h>
+#include <string.h>
 
 const char* fsm_user_event_to_str(fsm_user_event_t e) {
     switch (e) {
@@ -10,11 +11,36 @@ const char* fsm_user_event_to_str(fsm_user_event_t e) {
             return "FSM_USER_EVENT_RESUME";
         case FSM_USER_EVENT_STOP:   
             return "FSM_USER_EVENT_STOP";
-        case FSM_USER_EVENT_START_HOMIG:   
-            return "FSM_USER_EVENT_START_HOMIG";
+        case FSM_USER_EVENT_START_HOMING:   
+            return "FSM_USER_EVENT_START_HOMING";
         case FSM_USER_EVENT_REBOOT: 
             return "FSM_USER_EVENT_REBOOT";
         default:                    
             return "FSM_USER_EVENT_UNKNOWN";
     }
+}
+
+fsm_user_event_t fsm_user_event_from_str(const char* name) {
+    // Проверяем все возможные строки
+    if (strcmp(name, "start") == 0) {
+        return FSM_USER_EVENT_START;
+    }
+    if (strcmp(name, "pause") == 0) {
+        return FSM_USER_EVENT_PAUSE;
+    }
+    if (strcmp(name, "resume") == 0) {
+        return FSM_USER_EVENT_RESUME;
+    }
+    if (strcmp(name, "stop") == 0) {
+        return FSM_USER_EVENT_STOP;
+    }
+    if (strcmp(name, "home") == 0) {
+        return FSM_USER_EVENT_START_HOMING;
+    }
+    if (strcmp(name, "reboot") == 0) {
+        return FSM_USER_EVENT_REBOOT; 
+    }
+    
+    return -1;
+
 }

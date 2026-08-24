@@ -70,12 +70,12 @@ static fsm_state_t handle_user_event(
         case FSM_STATE_IDLE:
             if (event == FSM_USER_EVENT_START)
                 return FSM_STATE_STARTING;
-            if (event == FSM_USER_EVENT_START_HOMIG)   
+            if (event == FSM_USER_EVENT_START_HOMING)   
                 return FSM_STATE_HOMING; 
             break;
         
         case FSM_STATE_UNHOMED_IDLE:
-            if (event == FSM_USER_EVENT_START_HOMIG)
+            if (event == FSM_USER_EVENT_START_HOMING)
                 return FSM_STATE_HOMING;
             break;    
 

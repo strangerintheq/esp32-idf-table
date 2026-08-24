@@ -11,4 +11,5 @@ idf_component_register(
         storage   
         network 
         gallery
+        fsm
 )

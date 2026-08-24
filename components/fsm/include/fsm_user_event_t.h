@@ -6,10 +6,12 @@ typedef enum {
     FSM_USER_EVENT_PAUSE,
     FSM_USER_EVENT_RESUME,
     FSM_USER_EVENT_STOP,
-    FSM_USER_EVENT_START_HOMIG,
+    FSM_USER_EVENT_START_HOMING,
     FSM_USER_EVENT_REBOOT
 } fsm_user_event_t;
 
 const char* fsm_user_event_to_str(fsm_user_event_t);
+
+fsm_user_event_t fsm_user_event_from_str(const char*);
 
 #endif // FSM_USER_EVENT_H
