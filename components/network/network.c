@@ -140,3 +140,7 @@ char* network_get_settings() {
     cJSON_Delete(root);
     return json_str; // important: call 'free()' after usage!
 }
+
+void network_update_settings(char*) {
+
+}
