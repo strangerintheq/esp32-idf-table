@@ -3,7 +3,10 @@ idf_component_register(
         "server.c"
         "static.c"
         "ws.c"
-        "api.c"
+        "server_api.c"
+        "server_api_settings.c"
+        "server_api_gallery.c"
+        "server_api_signal.c"
     INCLUDE_DIRS 
         "include" 
     REQUIRES
