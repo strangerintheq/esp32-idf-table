@@ -56,40 +56,6 @@ static void remove_ws_client(httpd_req_t *req) {
     unlock();
 }
 
-static esp_err_t message_handler(httpd_req_t *req) {
-    httpd_ws_frame_t ws_pkt;
-    uint8_t *buf = NULL;
-    memset(&ws_pkt, 0, sizeof(httpd_ws_frame_t));
-
-    esp_err_t ret = httpd_ws_recv_frame(req, &ws_pkt, 0);
-    if (ret != ESP_OK) {
-        ESP_LOGE(TAG, "Ошибка получения длины кадра: %d", ret);
-        return ret;
-    }
-
-    if (ws_pkt.len) {
-        buf = calloc(1, ws_pkt.len + 1);
-        if (buf == NULL) {
-            ESP_LOGE(TAG, "Ошибка выделения памяти");
-            return ESP_ERR_NO_MEM;
-        }
-        ws_pkt.payload = buf;
-
-        ret = httpd_ws_recv_frame(req, &ws_pkt, ws_pkt.len);
-        if (ret != ESP_OK) {
-            ESP_LOGE(TAG, "Ошибка получения данных: %d", ret);
-            free(buf);
-            return ret;
-        }
-
-        ESP_LOGI(TAG, "Получено от клиента: %.*s", ws_pkt.len, ws_pkt.payload);
-
-    }
-
-    free(buf);
-    return ESP_OK;
-}
-
 static esp_err_t websocket_handler(httpd_req_t *req) {
     httpd_ws_frame_t ws_pkt;
     memset(&ws_pkt, 0, sizeof(httpd_ws_frame_t));
