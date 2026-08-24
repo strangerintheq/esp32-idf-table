@@ -16,8 +16,8 @@ static ws_client_t ws_clients[MAX_WS_CLIENTS];
 
 static SemaphoreHandle_t ws_clients_mutex = NULL;
 
-static void lock() {
-    xSemaphoreTake(ws_clients_mutex, portMAX_DELAY);
+bool lock() {
+    return xSemaphoreTake(ws_clients_mutex, portMAX_DELAY) == pdTRUE;
 }
 
 static void unlock() {
