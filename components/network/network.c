@@ -26,17 +26,16 @@ static void network_start_sta(void) {
     s_retry_num = 0;
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
     ESP_ERROR_CHECK(esp_wifi_start());
-    ESP_LOGI(TAG, "Запущен режим STA. Ожидание подключения к роутеру...");
+    ESP_LOGI(TAG, "wifi mode, connection to router...");
     esp_wifi_connect();
 }
 
 static void network_start_ap(void) {
-    ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_AP)); // Включаем строго чистую раздачу, без STA
+    ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_AP));
     ESP_ERROR_CHECK(esp_wifi_start());
-    ESP_LOGI(TAG, "Запущен чистый режим точки доступа (AP Mode).");
+    ESP_LOGI(TAG, "Access point mode activated.");
 }
 
-// Асинхронный обработчик системных событий Wi-Fi чипа
 static void wifi_event_handler(
     void* arg, 
     esp_event_base_t event_base,
@@ -47,21 +46,17 @@ static void wifi_event_handler(
     if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_DISCONNECTED) {
         if (s_retry_num < 5) {
             s_retry_num++;
-            ESP_LOGW(TAG, "Сбой подключения к роутеру. Попытка %d/5...", s_retry_num);
+            ESP_LOGW(TAG, "Router connection failed. Attempt %d/5...", s_retry_num);
             esp_wifi_connect();
         } else {
-            ESP_LOGE(TAG, "Роутер не ответил за 5 попыток.");
-            ESP_LOGW(TAG, "ФОЛБЕК: Наносекундное включение резервной точки доступа...");
-            
-            esp_wifi_stop(); // Полностью глушим радиомодуль, очищая контекст STA
-            
-            // Вызываем наш готовый внутренний метод включения чистой точки доступа
+            ESP_LOGE(TAG, "Router connection not respond...");
+            esp_wifi_stop(); 
             network_start_ap();
         }
     } 
     else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP) {
         ip_event_got_ip_t* event = (ip_event_got_ip_t*) event_data;
-        ESP_LOGW(TAG, "STA подключен! Домашний IP стола: " IPSTR, IP2STR(&event->ip_info.ip));
+        ESP_LOGW(TAG, "Wifi router connected! IP: " IPSTR, IP2STR(&event->ip_info.ip));
         s_retry_num = 0;
     }
 }
@@ -75,9 +70,8 @@ static void read_settings(network_settings_t *s) {
 }
 
 void network_init(void) {
-    ESP_LOGI(TAG, "Старт оркестрации сетевых интерфейсов...");
+    ESP_LOGI(TAG, "Network starting...");
 
-    // 1. Накатываем системное ядро LwIP и виртуальные адаптеры
     ESP_ERROR_CHECK(esp_netif_init());
     ESP_ERROR_CHECK(esp_event_loop_create_default());
     esp_netif_create_default_wifi_sta();
@@ -86,14 +80,12 @@ void network_init(void) {
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
     ESP_ERROR_CHECK(esp_wifi_init(&cfg));
 
-    // Подписываем наш обработчик на прерывания Wi-Fi стека
+    // subscribe to wifi events
     ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT, ESP_EVENT_ANY_ID, &wifi_event_handler, NULL, NULL));
     ESP_ERROR_CHECK(esp_event_handler_instance_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &wifi_event_handler, NULL, NULL));
 
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_APSTA));
 
-    
-    // Читаем и сразу скармливаем чипу настройки резервной точки доступа Dune (AP)
     wifi_config_t wifi_ap_config = {
         .ap = { 
             .channel = 1, 
@@ -105,20 +97,18 @@ void network_init(void) {
     network_settings_t s;
     read_settings(&s);
 
+    // access point settings
     strncpy((char*)wifi_ap_config.ap.ssid, s.ap_ssid, sizeof(wifi_ap_config.ap.ssid));
     wifi_ap_config.ap.ssid_len = strlen(s.ap_ssid);
     strncpy((char*)wifi_ap_config.ap.password, s.ap_password, sizeof(wifi_ap_config.ap.password));
     ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_AP, &wifi_ap_config));
 
-    // Читаем и сразу скармливаем чипу настройки домашнего роутера (STA)
+    // router settings
     wifi_config_t wifi_sta_config = {0};
-  
-    
     strncpy((char*)wifi_sta_config.sta.ssid, s.wifi_ssid, sizeof(wifi_sta_config.sta.ssid));
     strncpy((char*)wifi_sta_config.sta.password, s.wifi_password, sizeof(wifi_sta_config.sta.password));
     wifi_sta_config.sta.threshold.authmode = WIFI_AUTH_WPA2_PSK;
     ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &wifi_sta_config));
-
 
     if (strcmp(s.mode, "wifi") == 0) {
         network_start_sta();
@@ -141,6 +131,22 @@ char* network_get_settings() {
     return json_str; // important: call 'free()' after usage!
 }
 
-void network_update_settings(char*) {
+static void update_setting(cJSON* data, char* key) {
+    char *value = cJSON_GetStringValue(cJSON_GetObjectItem(data, key));
+    if (value != NULL) {
+        nvs_manager_set_str(NETWORK_NVS_NAMESPACE, key, value);
+        ESP_LOGI("TAG", "Updated %s = %s", key, value);
+    } else {
+        ESP_LOGW("TAG", "Key '%s' not found or not a string", key);
+    }
+}
 
+void network_update_settings(char* settings_str) {
+    cJSON *data = cJSON_Parse(settings_str);
+    update_setting(data, NETWORK_NVS_KEY_MODE);
+    update_setting(data, NETWORK_NVS_KEY_WIFI_SSID);
+    update_setting(data, NETWORK_NVS_KEY_WIFI_PASSWORD);
+    update_setting(data, NETWORK_NVS_KEY_AP_SSID);
+    update_setting(data, NETWORK_NVS_KEY_AP_PASSWORD);
+    cJSON_Delete(data);
 }
