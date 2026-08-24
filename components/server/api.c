@@ -2,7 +2,15 @@
 #include "esp_log.h"
 #include "nvs_manager.h"
 #include "network.h"
+#include "gallery.h"
 
+#include <stdio.h>
+#include <string.h>
+#include <sys/unistd.h>
+#include <sys/stat.h>
+#include <fcntl.h>     
+
+#define MIN(a, b) (((a) < (b)) ? (a) : (b))
 #define API_MAX_POST_SIZE 1024
 
 static const char *TAG = "[server/api.c]";
@@ -74,7 +82,16 @@ static esp_err_t get_network_settings(httpd_req_t *req) {
     return ESP_OK;
 }
 
+#define SCRATCH_BUFSIZE 8192 // Размер буфера для приема данных
+
+static esp_err_t gallery_upload(httpd_req_t *req) {
+    
+    return ESP_OK;
+}
+
+
 void api_init(httpd_handle_t server_handle) {
     register_post(server_handle, "/api/network/get", get_network_settings);
     register_post(server_handle, "/api/network/set", set_network_settings);
+    register_post(server_handle, "/api/upload", gallery_upload);
 }
