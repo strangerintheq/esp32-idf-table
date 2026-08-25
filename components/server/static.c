@@ -26,14 +26,14 @@ static esp_err_t set_content_type_from_file(
 
 static esp_err_t static_file_get_handler(httpd_req_t *req) {
 
-    if (strcmp(req->uri, "/ws") == 0) {
-        ESP_LOGI(TAG, "Skipping /ws in static handler (WebSocket)");
-        return ESP_ERR_NOT_FOUND; // Возвращаем ошибку, чтобы эстафета пошла дальше
-    }
-    
     char filepath[FILE_PATH_SIZE];
 
-    if (strcmp(req->uri, "/") == 0) {
+    if (
+        strcmp(req->uri, "/") == 0 || 
+        strcmp(req->uri, "/gallery") == 0 ||
+        strcmp(req->uri, "/network") == 0 ||
+        strcmp(req->uri, "/generator") == 0 
+    ) {
         snprintf(filepath, sizeof(filepath), "/littlefs/index.html");
     } else {
         snprintf(filepath, sizeof(filepath), "/littlefs%s", req->uri);
