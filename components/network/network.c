@@ -1,15 +1,8 @@
 #include "network_settings.h"
-#include "nvs_manager.h"
 #include "esp_log.h"
 #include "esp_wifi.h"
 #include "cJSON.h"
-
-#define NETWORK_NVS_NAMESPACE "wifi_store"
-#define NETWORK_NVS_KEY_MODE "mode"
-#define NETWORK_NVS_KEY_WIFI_SSID "wifi_ssid"
-#define NETWORK_NVS_KEY_WIFI_PASSWORD "wifi_password"
-#define NETWORK_NVS_KEY_AP_SSID "ap_ssid"
-#define NETWORK_NVS_KEY_AP_PASSWORD "ap_password"
+#include "network.h"
 
 static const char *TAG = "[network/network.c]";
 static int s_retry_num = 0;
@@ -53,8 +46,12 @@ static void wifi_event_handler(
     }
 }
 
-void network_init(void) {
+void network_settings_init(network_init_t*);
+
+void network_init(network_init_t* ni) {
     ESP_LOGI(TAG, "Network starting...");
+
+    network_settings_init(ni);
 
     ESP_ERROR_CHECK(esp_netif_init());
     ESP_ERROR_CHECK(esp_event_loop_create_default());

@@ -18,14 +18,20 @@ void app_main(void) {
     fsm_init();
     delay();
     nvs_manager_init();
-    network_init();
+
+    network_init_t ni = {
+        .read_value_by_key = nvs_manager_get_str,
+        .save_key_value_pair = nvs_manager_set_str,
+    };
+    network_init(&ni);
+    
     storage_init();
     server_init();
     broadcaster_init(ws_send);
-
-    // if (server_start() == true) {
-    //     fsm_post_system_event(FSM_SYSTEM_EVENT_BOOT_INIT_OK, NULL);
-    // } else {
-    //     fsm_post_system_event(FSM_SYSTEM_EVENT_ERROR, NULL);
-    // }
+    delay();
+    fsm_post_system_event(FSM_SYSTEM_EVENT_BOOT_INIT_OK, NULL);
+    delay();
+    fsm_post_user_event(FSM_USER_EVENT_START_HOMING, NULL);
+    delay();
+    fsm_post_system_event(FSM_SYSTEM_EVENT_HOMING_DONE, NULL);
 }

@@ -9,6 +9,5 @@ idf_component_register(
         esp_http_server 
         esp_event 
         esp_netif  
-        nvs_manager
         cjson
 )

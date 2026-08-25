@@ -2,7 +2,6 @@
 #include "esp_log.h"
 #include "nvs_flash.h"
 #include "nvs.h"
-#include <string.h>
 
 static const char *TAG = "[nvs_manager/nvs_manager.c]";
 
@@ -39,7 +38,7 @@ bool nvs_manager_set_str(
     err = nvs_set_str(handle, key, value);
     if (err == ESP_OK) {
         err = nvs_commit(handle); // Физический сброс данных во Flash
-        ESP_LOGI(TAG, "%s.%s saved", space, key);
+        ESP_LOGI(TAG, "save value %s.%s = $s", space, key, value);
     } else {
         ESP_LOGE(TAG, "%s.%s write error: %s", space, key, esp_err_to_name(err));
     }
@@ -70,7 +69,7 @@ bool nvs_manager_get_str(
         }
         return false;
     }
-
+    ESP_LOGI(TAG, "value read %s.%s = %s", space, key, out_value);
     return true;
 }
 
