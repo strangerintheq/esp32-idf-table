@@ -4,20 +4,17 @@
 #include "freertos/task.h"
 #include "freertos/queue.h"
 #include "fsm_event_t.h"
-#include "broadcaster.h"
 
 static const char *TAG = "[fsm/fsm.c]";
 static fsm_state_t current_state;
 static QueueHandle_t xFsmQueue = NULL;
 
-fsm_state_t fsm_get_current_state(void) {
-    return current_state;
-}
-
 extern fsm_state_t fsm_calc_next_state(
     const fsm_state_t state, 
     const fsm_event_t* event
 );
+
+static fsm_init_t* fsm_init_data;
 
 static void fsm_process_message(const fsm_event_t* event) {
     
@@ -35,8 +32,8 @@ static void fsm_process_message(const fsm_event_t* event) {
         ESP_LOGI(TAG, "%s -> %s", fsm_state_to_str(current_state), next_state_str);
 
         current_state = next_state;
-
-        broadcaster_publish("systemState",next_state_str);
+        
+        fsm_init_data->publish_state(current_state);
     }
 }
 
@@ -49,7 +46,8 @@ static void vFsmTask(void *pvParameters) {
     }
 }
 
-void fsm_init(void) {
+void fsm_init(fsm_init_t* init) {
+    fsm_init_data = init;
     xFsmQueue = xQueueCreate(10, sizeof(fsm_event_t));
     current_state = FSM_STATE_INITIALIZING;
     xTaskCreatePinnedToCore(vFsmTask, "fsm_task", 4096, NULL, 15, NULL, 1);

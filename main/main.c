@@ -10,24 +10,33 @@
 #include <broadcaster.h>
 #include <ws.h>
 
-static void delay(){
+static void delay() {
     vTaskDelay(pdMS_TO_TICKS(50));
 }
 
+static void publish_fsm_state(fsm_state_t state) {
+    broadcaster_publish("systemState", fsm_state_to_str(state));
+}
+
 void app_main(void) {
-    fsm_init();
-    delay();
+
     nvs_manager_init();
 
-    network_init_t ni = {
+    static network_init_t ni = {
         .read_value_by_key = nvs_manager_get_str,
         .save_key_value_pair = nvs_manager_set_str,
     };
     network_init(&ni);
-    
+
     storage_init();
     server_init();
     broadcaster_init(ws_send);
+
+    static fsm_init_t fi = {
+        .publish_state = publish_fsm_state
+    };
+    fsm_init(&fi);
+
     delay();
     fsm_post_system_event(FSM_SYSTEM_EVENT_BOOT_INIT_OK, NULL);
     delay();
