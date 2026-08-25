@@ -32,7 +32,8 @@ static void timer_cb(TimerHandle_t t) {
     send();
 }
 
-void broadcaster_init(void) {
+void broadcaster_init(void (*fn)(const char *)) {
+    sender = fn;
     root = cJSON_CreateObject();
     timer = xTimerCreate(
         "broadcaster",
@@ -65,8 +66,4 @@ void broadcaster_publish(const char *key, const char *value) {
         }
         xTimerStart(timer, 0);
     }
-}
-
-void broadcaster_register_sender(void (*fn)(const char *)) {
-    sender = fn;
 }

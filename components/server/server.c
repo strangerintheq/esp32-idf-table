@@ -1,9 +1,5 @@
 #include "esp_log.h"
 #include "esp_http_server.h"
-#include <sys/param.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
 static const char *TAG = "[server/server.c]";
 
