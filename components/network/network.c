@@ -73,8 +73,7 @@ void network_init(void) {
     wifi_config_t wifi_ap_config = {
         .ap = { 
             .channel = 1, 
-            .max_connection = 4, 
-            .authmode = WIFI_AUTH_WPA2_PSK 
+            .max_connection = 4
         }
     };
   
@@ -82,9 +81,14 @@ void network_init(void) {
     network_settings_read(&s);
 
     // access point settings
+    if (strlen(s.ap_password) < 8) {
+        wifi_ap_config.ap.authmode = WIFI_AUTH_OPEN;
+    } else {
+        strncpy((char*)wifi_ap_config.ap.password, s.ap_password, sizeof(wifi_ap_config.ap.password));
+        wifi_ap_config.ap.authmode = WIFI_AUTH_WPA_WPA2_PSK;
+    }
     strncpy((char*)wifi_ap_config.ap.ssid, s.ap_ssid, sizeof(wifi_ap_config.ap.ssid));
     wifi_ap_config.ap.ssid_len = strlen(s.ap_ssid);
-    strncpy((char*)wifi_ap_config.ap.password, s.ap_password, sizeof(wifi_ap_config.ap.password));
     ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_AP, &wifi_ap_config));
 
     // router settings
