@@ -12,7 +12,7 @@
 #define NETWORK_NVS_KEY_AP_SSID "ap_ssid"
 #define NETWORK_NVS_KEY_AP_PASSWORD "ap_password"
 
-static const char *TAG = "[network/network_settings.c]";
+// static const char *TAG = "[network/network_settings.c]";
 
 void network_settings_read(network_settings_t *s) {
     nvs_manager_get_str(NETWORK_NVS_NAMESPACE, NETWORK_NVS_KEY_MODE, s->mode, sizeof(s->mode));

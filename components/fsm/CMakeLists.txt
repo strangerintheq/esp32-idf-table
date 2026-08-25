@@ -7,4 +7,6 @@ idf_component_register(
         "fsm_calc_next_state.c"
     INCLUDE_DIRS 
         "include"
+    REQUIRES
+        broadcaster    
 )

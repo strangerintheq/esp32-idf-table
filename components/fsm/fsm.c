@@ -3,7 +3,8 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/queue.h"
-#include <fsm_event_t.h>
+#include "fsm_event_t.h"
+#include "broadcaster.h"
 
 static const char *TAG = "[fsm/fsm.c]";
 static fsm_state_t current_state;
@@ -30,10 +31,12 @@ static void fsm_process_message(const fsm_event_t* event) {
 
     if (next_state != current_state) {
 
-        ESP_LOGI(TAG, "%s -> %s", fsm_state_to_str(current_state), 
-            fsm_state_to_str(next_state));
+        const char* next_state_str = fsm_state_to_str(next_state);
+        ESP_LOGI(TAG, "%s -> %s", fsm_state_to_str(current_state), next_state_str);
 
         current_state = next_state;
+
+        broadcaster_publish("systemState",next_state_str);
     }
 }
 

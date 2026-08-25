@@ -136,3 +136,28 @@ void ws_init(httpd_handle_t server_handle) {
         ESP_LOGE(TAG, "failed to register WebSocket: %d", ret);
     }
 }
+
+void ws_send(const char *json) {
+    if (json == NULL) return;
+    
+    lock();
+    
+    for (int i = 0; i < MAX_WS_CLIENTS; i++) {
+        if (!ws_clients[i].active) 
+            continue;
+        
+        httpd_ws_frame_t frame = {
+            .type = HTTPD_WS_TYPE_TEXT,
+            .payload = (uint8_t*)json,
+            .len = strlen(json)
+        };
+        
+        httpd_ws_send_frame_async(
+            ws_clients[i].server,
+            ws_clients[i].fd,
+            &frame
+        );
+    }
+    
+    unlock();
+}
