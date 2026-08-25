@@ -1,4 +1,4 @@
-#include "network.h"
+#include "network_settings.h"
 #include "nvs_manager.h"
 #include "esp_log.h"
 #include "esp_wifi.h"
@@ -13,14 +13,6 @@
 
 static const char *TAG = "[network/network.c]";
 static int s_retry_num = 0;
-
-typedef struct {
-    char mode[8];
-    char wifi_ssid[32];
-    char wifi_password[64];
-    char ap_ssid[32];
-    char ap_password[64];
-} network_settings_t;
 
 static void network_start_sta(void) {
     s_retry_num = 0;
@@ -61,14 +53,6 @@ static void wifi_event_handler(
     }
 }
 
-static void read_settings(network_settings_t *s) {
-    nvs_manager_get_str(NETWORK_NVS_NAMESPACE, NETWORK_NVS_KEY_MODE, s->mode, sizeof(s->mode));
-    nvs_manager_get_str(NETWORK_NVS_NAMESPACE, NETWORK_NVS_KEY_AP_SSID, s->ap_ssid, sizeof(s->ap_ssid));
-    nvs_manager_get_str(NETWORK_NVS_NAMESPACE, NETWORK_NVS_KEY_AP_PASSWORD, s->ap_password, sizeof(s->ap_password));
-    nvs_manager_get_str(NETWORK_NVS_NAMESPACE, NETWORK_NVS_KEY_WIFI_SSID, s->wifi_ssid, sizeof(s->wifi_ssid));
-    nvs_manager_get_str(NETWORK_NVS_NAMESPACE, NETWORK_NVS_KEY_WIFI_PASSWORD, s->wifi_password, sizeof(s->wifi_password));
-}
-
 void network_init(void) {
     ESP_LOGI(TAG, "Network starting...");
 
@@ -95,7 +79,7 @@ void network_init(void) {
     };
   
     network_settings_t s;
-    read_settings(&s);
+    network_settings_read(&s);
 
     // access point settings
     strncpy((char*)wifi_ap_config.ap.ssid, s.ap_ssid, sizeof(wifi_ap_config.ap.ssid));
@@ -117,36 +101,4 @@ void network_init(void) {
     }
 }
 
-char* network_get_settings() {
-    network_settings_t s;
-    read_settings(&s);
-    cJSON *root = cJSON_CreateObject();
-    cJSON_AddStringToObject(root, NETWORK_NVS_KEY_MODE, s.mode);
-    cJSON_AddStringToObject(root, NETWORK_NVS_KEY_WIFI_SSID, s.wifi_ssid);
-    cJSON_AddStringToObject(root, NETWORK_NVS_KEY_WIFI_PASSWORD, s.wifi_password);
-    cJSON_AddStringToObject(root, NETWORK_NVS_KEY_AP_SSID, s.ap_ssid);
-    cJSON_AddStringToObject(root, NETWORK_NVS_KEY_AP_PASSWORD, s.ap_password);
-    char *json_str = cJSON_PrintUnformatted(root); 
-    cJSON_Delete(root);
-    return json_str; // important: call 'free()' after usage!
-}
 
-static void update_setting(cJSON* data, char* key) {
-    char *value = cJSON_GetStringValue(cJSON_GetObjectItem(data, key));
-    if (value != NULL) {
-        nvs_manager_set_str(NETWORK_NVS_NAMESPACE, key, value);
-        ESP_LOGI("TAG", "Updated %s = %s", key, value);
-    } else {
-        ESP_LOGW("TAG", "Key '%s' not found or not a string", key);
-    }
-}
-
-void network_update_settings(char* settings_str) {
-    cJSON *data = cJSON_Parse(settings_str);
-    update_setting(data, NETWORK_NVS_KEY_MODE);
-    update_setting(data, NETWORK_NVS_KEY_WIFI_SSID);
-    update_setting(data, NETWORK_NVS_KEY_WIFI_PASSWORD);
-    update_setting(data, NETWORK_NVS_KEY_AP_SSID);
-    update_setting(data, NETWORK_NVS_KEY_AP_PASSWORD);
-    cJSON_Delete(data);
-}
