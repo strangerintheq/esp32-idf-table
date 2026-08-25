@@ -2,6 +2,7 @@
 #include "esp_log.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/timers.h"
+#include "broadcaster.h"
 
 static const char *TAG = "[broadcaster/broadcaster.c]";
 
@@ -32,8 +33,8 @@ static void timer_cb(TimerHandle_t t) {
     send();
 }
 
-void broadcaster_init(void (*fn)(const char *)) {
-    sender = fn;
+void broadcaster_init(broadcaster_init_t* init) {
+    sender = init->broadcast;
     root = cJSON_CreateObject();
     timer = xTimerCreate(
         "broadcaster",

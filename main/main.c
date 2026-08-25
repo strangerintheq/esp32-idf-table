@@ -30,7 +30,11 @@ void app_main(void) {
 
     storage_init();
     server_init();
-    broadcaster_init(ws_send);
+    
+    static broadcaster_init_t bi = {
+        .broadcast = ws_send
+    };
+    broadcaster_init(&bi);
 
     static fsm_init_t fi = {
         .publish_state = publish_fsm_state
