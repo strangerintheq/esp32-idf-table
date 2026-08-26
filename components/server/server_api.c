@@ -1,12 +1,11 @@
 #include "esp_http_server.h" 
 #include "esp_log.h"
 
-
 #define API_MAX_POST_SIZE 1024
 
 static const char *TAG = "[server/server_api.c]";
 
-static void register_method(
+void server_api_register_method(
     httpd_handle_t server_handle, 
     httpd_method_t mathod,
     char* uri, 
@@ -47,19 +46,11 @@ char* server_api_get_post_body(httpd_req_t *req) {
     return buffer;
 }
 
-void server_api_post_ok(httpd_req_t *req) {
+void server_api_post_json(httpd_req_t *req, char* json) {
     httpd_resp_set_type(req, "application/json");
-    httpd_resp_sendstr(req, "{\"status\":\"ok\"}");
+    httpd_resp_send(req, json, strlen(json));
 }
 
-extern esp_err_t server_api_signal(httpd_req_t *req);
-extern esp_err_t server_api_get_network_settings(httpd_req_t *req);
-extern esp_err_t server_api_set_network_settings(httpd_req_t *req);
-extern esp_err_t server_api_gallery_upload(httpd_req_t *req);
-
-void api_init(httpd_handle_t server_handle) {
-    register_method(server_handle, HTTP_POST, "/api/network/get", server_api_get_network_settings);
-    register_method(server_handle, HTTP_POST, "/api/network/set", server_api_set_network_settings);
-    register_method(server_handle, HTTP_POST, "/api/upload/*", server_api_gallery_upload);
-    register_method(server_handle, HTTP_POST, "/api/signal/*", server_api_signal);
+void server_api_post_ok(httpd_req_t *req) {
+    server_api_post_json(req, "{\"status\":\"ok\"}");
 }

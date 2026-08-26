@@ -9,7 +9,6 @@ static const char *TAG = "[broadcaster/broadcaster.c]";
 static int throttle_ms = 500;
 static cJSON *root = NULL;           
 static TimerHandle_t timer = NULL;
-static int delay_ms = 500;
 static bool timer_running = false;
 static void (*sender)(const char *json) = NULL;
 
