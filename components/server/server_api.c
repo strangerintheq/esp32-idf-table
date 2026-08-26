@@ -11,13 +11,13 @@ void server_api_register_method(
     char* uri, 
     esp_err_t (*handler)(httpd_req_t *r)
 ) {
-    httpd_uri_t static_files_uri = { 
+    httpd_uri_t http_method = { 
         .uri = uri, 
         .method = mathod, 
         .handler = handler,
         .user_ctx = NULL,
     };
-    esp_err_t ret = httpd_register_uri_handler(server_handle, &static_files_uri);
+    esp_err_t ret = httpd_register_uri_handler(server_handle, &http_method);
     if (ret != ESP_OK) {
         ESP_LOGE(TAG, "Failed to register %s: %d", uri, ret);
     }
