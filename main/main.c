@@ -2,22 +2,19 @@
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h> 
 
-#include <fsm.h>
 #include <nvs_manager.h>
 #include <storage.h>
 #include <network.h>
 #include <network_settings.h>
 #include <broadcaster.h>
 #include <ws.h>
+#include <fsm.h>
 
-static void delay() {
+void delay() {
     vTaskDelay(pdMS_TO_TICKS(50));
 }
 
-static void fsm_state_changed(fsm_state_t state) {
-    broadcaster_publish("systemState", fsm_state_to_str(state));
-}
-
+void state_machine_init();
 void web_server_init();
 
 void app_main(void) {
@@ -39,15 +36,7 @@ void app_main(void) {
     };
     broadcaster_init(&bi);
 
-    static fsm_init_t fi = {
-        .publish_state = fsm_state_changed
-    };
-    fsm_init(&fi);
+    state_machine_init();
 
-    delay();
-    fsm_post_system_event(FSM_SYSTEM_EVENT_BOOT_INIT_OK, NULL);
-    delay();
-    fsm_post_user_event(FSM_USER_EVENT_START_HOMING, NULL);
-    delay();
-    fsm_post_system_event(FSM_SYSTEM_EVENT_HOMING_DONE, NULL);
+   
 }

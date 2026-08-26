@@ -2,6 +2,7 @@ idf_component_register(
     SRCS 
         "main.c"
         "web_server.c"
+        "state_machine.c"
     INCLUDE_DIRS 
         "."
     REQUIRES 
