@@ -1,0 +1,3 @@
+void gallery_init() {
+    
+}

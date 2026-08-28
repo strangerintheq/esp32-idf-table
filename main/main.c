@@ -9,6 +9,9 @@
 #include <broadcaster.h>
 #include <ws.h>
 #include <fsm.h>
+#include <gallery.h>
+#include <points_provider.h>
+#include <steppers.h>
 
 void delay() {
     vTaskDelay(pdMS_TO_TICKS(50));
@@ -35,6 +38,12 @@ void app_main(void) {
         .broadcast = ws_send
     };
     broadcaster_init(&bi);
+
+    gallery_init();
+
+    points_provider_init();
+
+    steppers_init();
 
     state_machine_init();
 

@@ -12,4 +12,7 @@ idf_component_register(
         server
         storage
         broadcaster
+        points_provider
+        gallery
+        steppers
 )
