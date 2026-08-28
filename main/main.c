@@ -41,9 +41,14 @@ void app_main(void) {
 
     gallery_init();
 
-    points_provider_init();
+    int capacity  = 40;
+    
+    QueueHandle_t xPointQueue = xQueueCreate(capacity, 12);
+    SemaphoreHandle_t xSyncSemaphore = xSemaphoreCreateBinary();
 
-    steppers_init();
+    points_provider_init(capacity, xPointQueue, xSyncSemaphore);
+
+    steppers_init(capacity, xPointQueue, xSyncSemaphore);
 
     state_machine_init();
 

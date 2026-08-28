@@ -37,7 +37,7 @@ static void fsm_process_message(const fsm_event_t* event) {
     }
 }
 
-static void vFsmTask(void *pvParameters) {
+static void fsm_task(void *pvParameters) {
     fsm_event_t event;
     while (1) {
         if (xQueueReceive(xFsmQueue, &event, portMAX_DELAY) == pdTRUE) {
@@ -50,7 +50,7 @@ void fsm_init(fsm_init_t* init) {
     fsm_init_data = init;
     xFsmQueue = xQueueCreate(10, sizeof(fsm_event_t));
     current_state = FSM_STATE_INITIALIZING;
-    xTaskCreatePinnedToCore(vFsmTask, "fsm_task", 4096, NULL, 15, NULL, 1);
+    xTaskCreatePinnedToCore(fsm_task, "fsm_task", 4096, NULL, 15, NULL, 1);
     ESP_LOGI(TAG, "initialized");
 }
 
