@@ -9,11 +9,8 @@ static void fsm_state_changed(fsm_state_t state) {
 void delay();
 
 void state_machine_init() {
-    
-    static fsm_init_t fi = {
-        .publish_state = fsm_state_changed
-    };
-    fsm_init(&fi);
+
+    fsm_init(fsm_state_changed);
 
     delay();
     fsm_post_system_event(FSM_SYSTEM_EVENT_BOOT_INIT_OK, NULL);

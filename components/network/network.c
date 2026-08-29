@@ -46,12 +46,41 @@ static void wifi_event_handler(
     }
 }
 
-void network_settings_init(network_init_t*);
+void network_settings_init(
 
-void network_init(network_init_t* ni) {
+    bool (*read_value_by_key)(
+        const char* namespace, 
+        const char* key,
+        char* value,
+        size_t len
+    ),
+    bool (*save_key_value_pair)(
+        const char* namespace, 
+        const char* key, 
+        const char* value
+    )
+
+);
+
+void network_init(
+
+    bool (*read_value_by_key)(
+        const char* namespace, 
+        const char* key,
+        char* value,
+        size_t len
+    ),
+
+    bool (*save_key_value_pair)(
+        const char* namespace, 
+        const char* key, 
+        const char* value
+    )
+    
+) {
     ESP_LOGI(TAG, "Network starting...");
 
-    network_settings_init(ni);
+    network_settings_init(read_value_by_key, save_key_value_pair);
 
     ESP_ERROR_CHECK(esp_netif_init());
     ESP_ERROR_CHECK(esp_event_loop_create_default());

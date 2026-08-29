@@ -1,6 +1,17 @@
 #ifndef STEPPERS_H
 #define STEPPERS_H
 
-void steppers_init(int capacity, QueueHandle_t queue, SemaphoreHandle_t sync);
+typedef struct {
+    float angle;
+    float radius;
+    uint32_t speed;
+} polar_point_t;
+
+void steppers_init(
+    int capacity,
+    int batch_size,
+    QueueHandle_t in, 
+    SemaphoreHandle_t sync
+);
 
 #endif

@@ -12,18 +12,47 @@
 #define NETWORK_NVS_KEY_AP_PASSWORD "ap_password"
 
 // static const char *TAG = "[network/network_settings.c]";
-static network_init_t* ni;
 
-void network_settings_init(network_init_t* init) {
-    ni = init;
+static bool (*save)(
+    const char* namespace, 
+    const char* key, 
+    const char* value
+) = NULL;
+
+static bool (*read)(
+    const char* namespace, 
+    const char* key,
+    char* value,
+    size_t len
+) = NULL;
+
+void network_settings_init(
+
+    bool (*read_value_by_key)(
+        const char* namespace, 
+        const char* key,
+        char* value,
+        size_t len
+    ),
+    
+    bool (*save_key_value_pair)(
+        const char* namespace, 
+        const char* key, 
+        const char* value
+    )
+
+) {
+
+    save = save_key_value_pair;
+    read = read_value_by_key;
 }
 
 void network_settings_read(network_settings_t *s) {
-    ni->read_value_by_key(NETWORK_NVS_NAMESPACE, NETWORK_NVS_KEY_MODE, s->mode, sizeof(s->mode));
-    ni->read_value_by_key(NETWORK_NVS_NAMESPACE, NETWORK_NVS_KEY_AP_SSID, s->ap_ssid, sizeof(s->ap_ssid));
-    ni->read_value_by_key(NETWORK_NVS_NAMESPACE, NETWORK_NVS_KEY_AP_PASSWORD, s->ap_password, sizeof(s->ap_password));
-    ni->read_value_by_key(NETWORK_NVS_NAMESPACE, NETWORK_NVS_KEY_WIFI_SSID, s->wifi_ssid, sizeof(s->wifi_ssid));
-    ni->read_value_by_key(NETWORK_NVS_NAMESPACE, NETWORK_NVS_KEY_WIFI_PASSWORD, s->wifi_password, sizeof(s->wifi_password));
+    read(NETWORK_NVS_NAMESPACE, NETWORK_NVS_KEY_MODE, s->mode, sizeof(s->mode));
+    read(NETWORK_NVS_NAMESPACE, NETWORK_NVS_KEY_AP_SSID, s->ap_ssid, sizeof(s->ap_ssid));
+    read(NETWORK_NVS_NAMESPACE, NETWORK_NVS_KEY_AP_PASSWORD, s->ap_password, sizeof(s->ap_password));
+    read(NETWORK_NVS_NAMESPACE, NETWORK_NVS_KEY_WIFI_SSID, s->wifi_ssid, sizeof(s->wifi_ssid));
+    read(NETWORK_NVS_NAMESPACE, NETWORK_NVS_KEY_WIFI_PASSWORD, s->wifi_password, sizeof(s->wifi_password));
 }
 
 char* network_settings_get_json_str(void) {
@@ -43,7 +72,7 @@ char* network_settings_get_json_str(void) {
 static void update_setting(cJSON* data, char* key) {
     char *value = cJSON_GetStringValue(cJSON_GetObjectItem(data, key));
     if (value != NULL) {
-        ni->save_key_value_pair(NETWORK_NVS_NAMESPACE, key, value);
+        save(NETWORK_NVS_NAMESPACE, key, value);
         ESP_LOGI("TAG", "Updated %s = %s", key, value);
     } else {
         ESP_LOGW("TAG", "Key '%s' not found or not a string", key);

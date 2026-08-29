@@ -14,7 +14,7 @@ extern fsm_state_t fsm_calc_next_state(
     const fsm_event_t* event
 );
 
-static fsm_init_t* fsm_init_data;
+static void (*fsm_publish_state)(fsm_state_t);
 
 static void fsm_process_message(const fsm_event_t* event) {
     
@@ -33,7 +33,7 @@ static void fsm_process_message(const fsm_event_t* event) {
 
         current_state = next_state;
         
-        fsm_init_data->publish_state(current_state);
+        fsm_publish_state(current_state);
     }
 }
 
@@ -46,8 +46,8 @@ static void fsm_task(void *pvParameters) {
     }
 }
 
-void fsm_init(fsm_init_t* init) {
-    fsm_init_data = init;
+void fsm_init(void (*publish_state)(fsm_state_t)) {
+    fsm_publish_state = publish_state;
     xFsmQueue = xQueueCreate(10, sizeof(fsm_event_t));
     current_state = FSM_STATE_INITIALIZING;
     xTaskCreatePinnedToCore(fsm_task, "fsm_task", 4096, NULL, 15, NULL, 1);

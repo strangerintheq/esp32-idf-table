@@ -24,31 +24,40 @@ void app_main(void) {
 
     nvs_manager_init();
 
-    static network_init_t ni = {
-        .read_value_by_key = nvs_manager_get_str,
-        .save_key_value_pair = nvs_manager_set_str,
-    };
-    network_init(&ni);
+    network_init(
+        nvs_manager_get_str, 
+        nvs_manager_set_str
+    );
 
     storage_init();
 
     web_server_init();
 
-    static broadcaster_init_t bi = {
-        .broadcast = ws_send
-    };
-    broadcaster_init(&bi);
+    broadcaster_init(
+        ws_send
+    );
 
     gallery_init();
 
-    int capacity  = 40;
-    
-    QueueHandle_t xPointQueue = xQueueCreate(capacity, 12);
-    SemaphoreHandle_t xSyncSemaphore = xSemaphoreCreateBinary();
+    const int capacity = 40;
+    const int batch_size = 20;
+    const size_t point_size = sizeof(polar_point_t);
+    QueueHandle_t queue = xQueueCreate(capacity, point_size);
+    SemaphoreHandle_t sync = xSemaphoreCreateBinary();
 
-    points_provider_init(capacity, xPointQueue, xSyncSemaphore);
+    points_provider_init(
+        capacity, 
+        batch_size,
+        queue, 
+        sync
+    );
 
-    steppers_init(capacity, xPointQueue, xSyncSemaphore);
+    steppers_init(
+        capacity, 
+        batch_size,
+        queue, 
+        sync
+    );
 
     state_machine_init();
 

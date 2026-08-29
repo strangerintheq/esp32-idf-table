@@ -1,6 +1,11 @@
 #ifndef POINTS_PROVIDER_H
 #define POINTS_PROVIDER_H
 
-void points_provider_init(int capacity, QueueHandle_t queue, SemaphoreHandle_t sync);
+void points_provider_init(
+    int capacity, 
+    int batch_size, 
+    QueueHandle_t queue, 
+    SemaphoreHandle_t sync
+);
 
 #endif
