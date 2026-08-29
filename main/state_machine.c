@@ -1,10 +1,27 @@
 #include <fsm.h>
 #include <broadcaster.h>
 #include <stdio.h>
+#include <freertos/FreeRTOS.h>
 
-static void fsm_state_initializing() {}
-static void fsm_state_unhomed_idle() {}
-static void fsm_state_homing() {}
+static void delay1s(){
+    vTaskDelay(pdMS_TO_TICKS(1000));
+}
+
+static void fsm_state_initializing() {
+    delay1s();
+    fsm_post_system_event(FSM_SYSTEM_EVENT_BOOT_INIT_OK, NULL);
+}
+
+static void fsm_state_unhomed_idle() {
+    delay1s();
+    fsm_post_user_event(FSM_USER_EVENT_START_HOMING, NULL);
+}
+
+static void fsm_state_homing() {
+    delay1s();
+    fsm_post_system_event(FSM_SYSTEM_EVENT_HOMING_DONE, NULL);
+}
+
 static void fsm_state_idle() {}
 static void fsm_state_starting() {}
 static void fsm_state_running() {}
@@ -34,16 +51,6 @@ static void fsm_state_changed(fsm_state_t state) {
     }
 }
 
-void delay();
-
 void state_machine_init() {
-
     fsm_init(fsm_state_changed);
-
-    delay();
-    fsm_post_system_event(FSM_SYSTEM_EVENT_BOOT_INIT_OK, NULL);
-    delay();
-    fsm_post_user_event(FSM_USER_EVENT_START_HOMING, NULL);
-    delay();
-    fsm_post_system_event(FSM_SYSTEM_EVENT_HOMING_DONE, NULL);
 }
