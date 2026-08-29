@@ -38,6 +38,7 @@ static void fsm_process_message(const fsm_event_t* event) {
 }
 
 static void fsm_task(void *pvParameters) {
+    fsm_publish_state(current_state);
     fsm_event_t event;
     while (1) {
         if (xQueueReceive(xFsmQueue, &event, portMAX_DELAY) == pdTRUE) {
