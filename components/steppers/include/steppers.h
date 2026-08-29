@@ -1,6 +1,17 @@
 #ifndef STEPPERS_H
 #define STEPPERS_H
 
+void steppers_starting();
+
+void steppers_running();
+
+void steppers_pausing();
+
+void steppers_resuming();
+
+void steppers_stopping();
+
+
 typedef struct {
     float angle;
     float radius;

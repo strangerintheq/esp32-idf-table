@@ -2,6 +2,9 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "steppers.h"
+#include "esp_log.h"
+
+static const char *TAG = "[stepprs/stepprs.c]";
 
 static int queue_capacity;
 static int queue_batch_size;
@@ -39,4 +42,24 @@ void steppers_init(
     sync_semaphore = sync;
 
     xTaskCreatePinnedToCore(steppers_task, "steppers_task", 4096, NULL, 15, NULL, 1);
+}
+
+void steppers_starting() {
+    ESP_LOGI(TAG, "steppers_starting");
+}
+
+void steppers_running() {
+    ESP_LOGI(TAG, "steppers_running");
+}
+
+void steppers_pausing() {
+    ESP_LOGI(TAG, "steppers_pausing");
+}
+
+void steppers_resuming() {
+    ESP_LOGI(TAG, "steppers_resuming");
+}
+
+void steppers_stopping() {
+    ESP_LOGI(TAG, "steppers_stopping");
 }

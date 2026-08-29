@@ -1,6 +1,8 @@
-
+#include "esp_log.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+
+static const char *TAG = "[points_provider/points_provider.c]";
 
 static QueueHandle_t out_queue = NULL;
 static SemaphoreHandle_t sync_semaphore = NULL;
@@ -28,18 +30,18 @@ void points_provider_init(
     xTaskCreatePinnedToCore(points_provider_task, "points_provider_task", 4096, NULL, 15, NULL, 1);
 }
 
-void points_provider_start() {
-
+void points_provider_starting() {
+    ESP_LOGI(TAG, "points_provider_starting");
 }
 
-void points_provider_pause() {
-
+void points_provider_pausing() {
+    ESP_LOGI(TAG, "points_provider_pausing");
 }
 
-void points_provider_unpause() {
-
+void points_provider_resuming() {
+    ESP_LOGI(TAG, "points_provider_resume");
 }
 
-void points_provider_stop() {
-
+void points_provider_stopping() {
+    ESP_LOGI(TAG, "points_provider_stopping");
 }

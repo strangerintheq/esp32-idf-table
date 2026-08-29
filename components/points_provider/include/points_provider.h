@@ -5,13 +5,13 @@
 #include "freertos/task.h"
 #include "freertos/queue.h"
 
-void points_provider_start();
+void points_provider_starting();
 
-void points_provider_pause();
+void points_provider_pausing();
 
-void points_provider_unpause();
+void points_provider_resuming();
 
-void points_provider_stop();
+void points_provider_stopping();
 
 void points_provider_init(
     int capacity, 
