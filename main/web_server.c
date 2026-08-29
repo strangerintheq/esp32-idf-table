@@ -39,8 +39,9 @@ static esp_err_t signal(httpd_req_t *req) {
 }
 
 void web_server_init() {
-    httpd_handle_t* server_handle = server_init();
+    httpd_handle_t server_handle = server_init();
     server_api_register_method(server_handle, HTTP_POST, "/api/network/get", get_network_settings);
-    server_api_register_method(server_handle, HTTP_POST, "/api/network/get", set_network_settings);
+    server_api_register_method(server_handle, HTTP_POST, "/api/network/set", set_network_settings);
     server_api_register_method(server_handle, HTTP_POST, "/api/signal/*", signal);
+    server_api_serve_static(server_handle);
 }

@@ -7,17 +7,17 @@ static const char *TAG = "[server/server_api.c]";
 
 void server_api_register_method(
     httpd_handle_t server_handle, 
-    httpd_method_t mathod,
+    httpd_method_t method,
     char* uri, 
     esp_err_t (*handler)(httpd_req_t *r)
 ) {
-    httpd_uri_t http_method = { 
-        .uri = uri, 
-        .method = mathod, 
-        .handler = handler,
-        .user_ctx = NULL,
-    };
-    esp_err_t ret = httpd_register_uri_handler(server_handle, &http_method);
+    httpd_uri_t *http_method = malloc(sizeof(httpd_uri_t));
+    http_method->uri = uri; 
+    http_method->method = method; 
+    http_method->handler = handler;
+    http_method->user_ctx = NULL;
+    ESP_LOGI(TAG, "register %s", http_method->uri);
+    esp_err_t ret = httpd_register_uri_handler(server_handle, http_method);
     if (ret != ESP_OK) {
         ESP_LOGE(TAG, "Failed to register %s: %d", uri, ret);
     }

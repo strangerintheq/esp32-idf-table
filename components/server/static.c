@@ -78,7 +78,7 @@ static esp_err_t static_file_get_handler(httpd_req_t *req) {
     return ESP_OK;
 }
 
-void static_init(httpd_handle_t server_handle) {
+void server_api_serve_static(httpd_handle_t server_handle) {
     httpd_uri_t static_files_uri = { 
         .uri = "/*", 
         .method = HTTP_GET, 

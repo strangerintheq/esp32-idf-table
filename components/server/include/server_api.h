@@ -14,4 +14,6 @@ void server_api_register_method(
     esp_err_t (*handler)(httpd_req_t *r)
 );
 
+void server_api_serve_static(httpd_handle_t*);
+
 #endif

@@ -45,3 +45,7 @@ void points_provider_resuming() {
 void points_provider_stopping() {
     ESP_LOGI(TAG, "points_provider_stopping");
 }
+
+void points_provider_set_task() {
+    ESP_LOGI(TAG, "points_provider_set_task");
+}

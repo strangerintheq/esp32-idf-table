@@ -13,6 +13,8 @@ void points_provider_resuming();
 
 void points_provider_stopping();
 
+void points_provider_set_task();
+
 void points_provider_init(
     int capacity, 
     int batch_size, 
