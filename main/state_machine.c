@@ -1,5 +1,6 @@
 #include <fsm.h>
 #include <broadcaster.h>
+#include <points_provider.h>
 #include <stdio.h>
 #include <freertos/FreeRTOS.h>
 
@@ -23,13 +24,29 @@ static void fsm_state_homing() {
 }
 
 static void fsm_state_idle() {}
-static void fsm_state_starting() {}
+
+static void fsm_state_starting() {
+    points_provider_start();
+}
+
 static void fsm_state_running() {}
-static void fsm_state_pausing() {}
+
+static void fsm_state_pausing() {
+    points_provider_pause();
+}
+
 static void fsm_state_paused() {}
-static void fsm_state_resuming() {}
-static void fsm_state_stopping() {}
+
+static void fsm_state_resuming() {
+    points_provider_unpause();
+}
+
+static void fsm_state_stopping() {
+    points_provider_stop();
+}
+
 static void fsm_state_rebooting() {}
+
 static void fsm_state_error() {}
 
 static void fsm_state_changed(fsm_state_t state) {

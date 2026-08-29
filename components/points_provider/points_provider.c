@@ -24,7 +24,22 @@ void points_provider_init(
     sync_semaphore = sync;
     queue_capacity = capacity;
     queue_batch_size = batch_size;
-    
+
     xTaskCreatePinnedToCore(points_provider_task, "points_provider_task", 4096, NULL, 15, NULL, 1);
 }
 
+void points_provider_start() {
+
+}
+
+void points_provider_pause() {
+
+}
+
+void points_provider_unpause() {
+
+}
+
+void points_provider_stop() {
+
+}
