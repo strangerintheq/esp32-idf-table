@@ -41,7 +41,6 @@ static esp_err_t static_file_get_handler(httpd_req_t *req) {
 
     int opened_file_handle = storage_open(filepath, "rb");
 
-    // Вызываем абстрактное открытие файла через storage
     if (opened_file_handle == -1) {
         ESP_LOGE(TAG, "Ресурс не найден через storage API: %s", filepath);
         httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "File not found");

@@ -2,6 +2,9 @@ idf_component_register(
     SRCS 
         "main.c"
         "web_server.c"
+        "web_server_network.c"
+        "web_server_gallery.c"
+        "web_server_signal.c"
         "state_machine.c"
     INCLUDE_DIRS 
         "."
