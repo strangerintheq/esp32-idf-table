@@ -2,7 +2,6 @@
 #include <server_api.h>
 #include <gallery.h>
 
-
 #ifndef MIN
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
 #endif
@@ -59,41 +58,28 @@ esp_err_t web_server__gallery_upload(httpd_req_t *req) {
 
 esp_err_t web_server__get_gallery_item(httpd_req_t *req) {
     char item_id[64];
-    
-    // 1. Извлекаем ID или имя элемента из URI (например, ?id=123)
     if (httpd_query_key_value(req->uri, "id", item_id, sizeof(item_id)) != ESP_OK) {
         httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "Missing 'id' parameter");
         return ESP_FAIL;
     }
-
-    // 2. Открываем элемент через абстракцию галереи
     gallery_item_t item;
     item.id = item_id;
     if (!gallery_item_open(&item)) {
         httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "Gallery item not found");
         return ESP_FAIL;
     }
-
     httpd_resp_set_type(req, "image/jpeg"); 
-
     char buffer[FILE_CHUNK_SIZE];
     int read_bytes;
     esp_err_t res = ESP_OK;
-
-    // Предполагаем, что gallery_item_read возвращает количество прочитанных байт или 0 в конце
     while ((read_bytes = gallery_item_read(&item, buffer, sizeof(buffer))) > 0) {
         res = httpd_resp_send_chunk(req, buffer, read_bytes);
         if (res != ESP_OK) {
             break; 
         }
     }
-
-    // 5. Обязательно закрываем абстракцию для освобождения дескрипторов/памяти
     gallery_item_close(&item);
-
-    // 6. Завершаем chunked-ответ
     httpd_resp_send_chunk(req, NULL, 0);
-
     return res == ESP_OK ? ESP_OK : ESP_FAIL;
 }
 
