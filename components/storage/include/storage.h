@@ -29,4 +29,9 @@ void storage_close_all();
 
 bool storage_ensure_directory(char*);
 
+typedef void* storage_dir_t; 
+storage_dir_t storage_dir_open(const char* dirpath);
+bool storage_dir_next(storage_dir_t dir, char* filename_out, size_t max_len);
+void storage_dir_close(storage_dir_t dir);
+
 #endif // STORAGE_H

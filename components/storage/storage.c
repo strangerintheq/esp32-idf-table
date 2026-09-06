@@ -6,6 +6,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
 #include "sys/stat.h"
+#include "dirent.h"
 
 static const char *TAG = "[storage/storage.c]";
 #define MAX_OPEN_FILES 10
@@ -204,6 +205,7 @@ void storage_close_all(void) {
     unlock();
 }
 
+//
 
 bool storage_ensure_directory(char* name) {
     char full_path[128];
@@ -214,4 +216,31 @@ bool storage_ensure_directory(char* name) {
         ESP_LOGI(TAG, "Директория /gallery создана");
     }
     return true;
+}
+
+storage_dir_t storage_dir_open(const char* dirpath) {
+    char full_path[128];
+    snprintf(full_path, sizeof(full_path), "/littlefs%s", dirpath);
+    return (storage_dir_t) opendir(full_path);
+}
+
+bool storage_dir_next(storage_dir_t dir, char* filename_out, size_t max_len) {
+    if (dir == NULL || filename_out == NULL || max_len == 0) return false;
+    
+    struct dirent *entry;
+    while ((entry = readdir((DIR*)dir)) != NULL) {
+        if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {
+            continue;
+        }
+        strncpy(filename_out, entry->d_name, max_len - 1);
+        filename_out[max_len - 1] = '\0';
+        return true;
+    }
+    return false;
+}
+
+void storage_dir_close(storage_dir_t dir) {
+    if (dir != NULL) {
+        closedir((DIR*)dir);
+    }
 }

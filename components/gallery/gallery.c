@@ -6,8 +6,10 @@
 
 //static const char *TAG = "[gallery/gallery.c]";
 
+#define GALLERY_DIR "/gallery"
+
 void gallery_init() {
-    storage_ensure_directory("/gallery");
+    storage_ensure_directory(GALLERY_DIR);
 }
 
 static void generate_random_id(char *output, size_t length) {
@@ -21,18 +23,15 @@ static void generate_random_id(char *output, size_t length) {
 }
 
 // get gallery list
-gallery_iterator_t gallery_iterator_start() {
-    gallery_iterator_t it = { 
-        .dir_ptr = NULL, 
-        .is_valid = false 
-    };
-    return it;
+bool gallery_iterator_start(gallery_iterator_t* it) {
+    it->dir = storage_dir_open(GALLERY_DIR);
+    return true;
 }
-bool gallery_iterator_next(gallery_iterator_t *it, char *buffer, size_t max_len) {
-    return false; 
+bool gallery_iterator_next(gallery_iterator_t* it, char *buffer, size_t max_len) {
+    return storage_dir_next(it, buffer, max_len); 
 }
-void gallery_iterator_close(gallery_iterator_t *it) {
-  
+void gallery_iterator_close(gallery_iterator_t* it) {
+    storage_dir_close(it);
 }
 
 
@@ -40,7 +39,7 @@ void gallery_iterator_close(gallery_iterator_t *it) {
 bool gallery_upload_start(gallery_upload_t* upload) {
     generate_random_id(upload->id, 8);
     char path[128];
-    snprintf(path, sizeof(path), "/gallery/%s.bin", upload->id);
+    snprintf(path, sizeof(path), "%s/%s.bin", GALLERY_DIR, upload->id);
     upload->file = storage_open(path, "wb");
     return true;
 }
@@ -50,7 +49,7 @@ void gallery_upload_write(gallery_upload_t* stream, char* buffer, size_t receive
 void gallery_upload_finish(gallery_upload_t* stream) {
     storage_close(stream->file);
     char path[128];
-    snprintf(path, sizeof(path), "/gallery/%s.json", stream->id);
+    snprintf(path, sizeof(path), "%s/%s.json", GALLERY_DIR, stream->id);
 
     // save metdata
     int descr = storage_open(path, "wb");
@@ -64,8 +63,8 @@ void gallery_upload_finish(gallery_upload_t* stream) {
 // get item chunked
 bool gallery_item_open(gallery_item_t* item) {
     char path[128];
-    snprintf(path, sizeof(path), "/gallery/%s.bin", item->id);
-    item->file = storage_open("/gallery/", "rb");
+    snprintf(path, sizeof(path), "%s/%s.bin", GALLERY_DIR, item->id);
+    item->file = storage_open(GALLERY_DIR, "rb");
     return true;
 }
 size_t gallery_item_read(gallery_item_t* item, char* buffer, size_t len) {

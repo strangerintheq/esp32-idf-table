@@ -10,7 +10,8 @@
 esp_err_t web_server__get_gallery_list(httpd_req_t *req) {
     httpd_resp_set_type(req, "application/json");
     httpd_resp_send_chunk(req, "[\n", 2);
-    gallery_iterator_t it = gallery_iterator_start();
+    gallery_iterator_t it;
+    gallery_iterator_start(&it);
     char record[512];
     bool is_first = true;
     while (gallery_iterator_next(&it, record, sizeof(record))) {
