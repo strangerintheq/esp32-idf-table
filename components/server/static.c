@@ -4,7 +4,7 @@
 
 static const char *TAG = "[server/static.c]";
 
-#define FILE_CHUNK_SIZE 1024
+
 #define FILE_PATH_SIZE 522 
 
 static esp_err_t set_content_type_from_file(
@@ -34,9 +34,9 @@ static esp_err_t static_file_get_handler(httpd_req_t *req) {
         strcmp(req->uri, "/network") == 0 ||
         strcmp(req->uri, "/generator") == 0 
     ) {
-        snprintf(filepath, sizeof(filepath), "/littlefs/index.html");
+        snprintf(filepath, sizeof(filepath), "index.html");
     } else {
-        snprintf(filepath, sizeof(filepath), "/littlefs%s", req->uri);
+        snprintf(filepath, sizeof(filepath), "%s", req->uri);
     }
 
     int opened_file_handle = storage_open(filepath, "rb");

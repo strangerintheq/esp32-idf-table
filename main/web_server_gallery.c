@@ -33,7 +33,8 @@ esp_err_t web_server__gallery_upload(httpd_req_t *req) {
     int received;
     size_t total_len = req->content_len;
     size_t remaining = total_len;
-    gallery_write_stream_t stream = gallery_upload_start();
+    gallery_upload_t upload;
+    gallery_upload_start(&upload);
     while (remaining > 0) {
         received = httpd_req_recv(req, buf, MIN(remaining, SCRATCH_BUFSIZE));
         if (received <= 0) {
@@ -43,10 +44,10 @@ esp_err_t web_server__gallery_upload(httpd_req_t *req) {
             httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Failed to receive post data");
             return ESP_FAIL;
         }
-        gallery_upload_write(&stream, buf, received);
+        gallery_upload_write(&upload, buf, received);
         remaining -= received;
     }
-    gallery_upload_finish(&stream);
+    gallery_upload_finish(&upload);
     httpd_resp_set_status(req, "201 Created");
     httpd_resp_sendstr(req, "File uploaded successfully");
     return ESP_OK;
@@ -66,7 +67,8 @@ esp_err_t web_server__get_gallery_item(httpd_req_t *req) {
 
     // 2. Открываем элемент через абстракцию галереи
     gallery_item_t item;
-    if (!gallery_item_open(&item, item_id)) {
+    item.id = item_id;
+    if (!gallery_item_open(&item)) {
         httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "Gallery item not found");
         return ESP_FAIL;
     }

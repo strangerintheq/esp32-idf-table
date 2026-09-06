@@ -12,7 +12,7 @@ typedef struct {
     bool is_valid; 
 } gallery_iterator_t;
 
-gallery_iterator_t gallery_iterator_start(void);
+gallery_iterator_t gallery_iterator_start();
 bool gallery_iterator_next(gallery_iterator_t *it, char *buffer, size_t max_len);
 void gallery_iterator_close(gallery_iterator_t *it);
 
@@ -20,23 +20,26 @@ void gallery_iterator_close(gallery_iterator_t *it);
 // upload item chunked
 
 typedef struct {
+    char* name;
+    int file;
+    char id[9];
+} gallery_upload_t ;
 
-} gallery_write_stream_t ;
-
-gallery_write_stream_t gallery_upload_start();
-void gallery_upload_write(gallery_write_stream_t* stream, char* buffer, size_t received);
-void gallery_upload_finish(gallery_write_stream_t* stream);
+bool gallery_upload_start(gallery_upload_t*);
+void gallery_upload_write(gallery_upload_t*, char*, size_t);
+void gallery_upload_finish(gallery_upload_t*);
 
 
 // get item chunked
 
 typedef struct {
-
+    char* id;
+    int file;
 } gallery_item_t;
 
-bool gallery_item_open(gallery_item_t*, char* item_id);
-size_t gallery_item_read(gallery_item_t* item, char* buffer, size_t len);
-void gallery_item_close(gallery_item_t* item);
+bool gallery_item_open(gallery_item_t*);
+size_t gallery_item_read(gallery_item_t*, char*, size_t);
+void gallery_item_close(gallery_item_t*);
 
 #endif
 

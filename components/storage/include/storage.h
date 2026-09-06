@@ -1,6 +1,8 @@
 #ifndef STORAGE_H
 #define STORAGE_H
 
+#define FILE_CHUNK_SIZE 1024
+
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -23,6 +25,8 @@ bool storage_is_open(int handle);
 
 void storage_close(int handle);
 
-void storage_close_all(void);
+void storage_close_all();
+
+bool storage_ensure_directory(char*);
 
 #endif // STORAGE_H

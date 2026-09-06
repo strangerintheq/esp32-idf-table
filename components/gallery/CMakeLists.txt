@@ -3,4 +3,6 @@ idf_component_register(
         "gallery.c" 
     INCLUDE_DIRS 
         "include"
+    REQUIRES
+        "storage"    
 )

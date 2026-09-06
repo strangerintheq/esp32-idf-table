@@ -5,6 +5,7 @@
 #include "esp_littlefs.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
+#include "sys/stat.h"
 
 static const char *TAG = "[storage/storage.c]";
 #define MAX_OPEN_FILES 10
@@ -82,18 +83,20 @@ int storage_open(const char* filepath, const char* mode) {
         unlock();
         return -1;
     }
-    FILE *file = fopen(filepath, mode);
+    char full_path[128];
+    snprintf(full_path, sizeof(full_path), "/littlefs%s", filepath);
+    FILE *file = fopen(full_path, mode);
     if (file == NULL) {
-        ESP_LOGE(TAG, "Can't open: %s", filepath);
+        ESP_LOGE(TAG, "Can't open: %s", full_path);
         unlock();
         return -1;
     }
     open_files[slot].file = file;
-    strncpy(open_files[slot].path, filepath, sizeof(open_files[slot].path) - 1);
+    strncpy(open_files[slot].path, full_path, sizeof(open_files[slot].path) - 1);
     open_files[slot].path[sizeof(open_files[slot].path) - 1] = '\0';
     open_files[slot].is_open = true;
     open_files[slot].size = get_file_size(file);
-    ESP_LOGI(TAG, "Opened: %s (handle: %d)", filepath, slot);
+    ESP_LOGI(TAG, "Opened: %s (handle: %d)", full_path, slot);
     unlock();
     return slot;
 }
@@ -120,7 +123,7 @@ size_t storage_write(int handle, const void* buffer, size_t size) {
         return 0;
     }
     size_t written = fwrite(buffer, 1, size, open_files[handle].file);
-    if (written > 0) open_files[handle].size = get_file_size(open_files[handle].file);
+    if (written > 0) open_files[handle].size += written;
     unlock();
     return written;
 }
@@ -199,4 +202,16 @@ void storage_close_all(void) {
         }
     }
     unlock();
+}
+
+
+bool storage_ensure_directory(char* name) {
+    char full_path[128];
+    snprintf(full_path, sizeof(full_path), "/littlefs%s", name);
+    struct stat st;
+    if (stat(full_path, &st) != 0) {
+        mkdir(full_path, 0755);
+        ESP_LOGI(TAG, "Директория /gallery создана");
+    }
+    return true;
 }
