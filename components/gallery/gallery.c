@@ -3,6 +3,7 @@
 #include "stdio.h"
 #include "esp_random.h" 
 #include "string.h"
+#include "esp_log.h"
 
 //static const char *TAG = "[gallery/gallery.c]";
 
@@ -28,10 +29,29 @@ bool gallery_iterator_start(gallery_iterator_t* it) {
     return true;
 }
 bool gallery_iterator_next(gallery_iterator_t* it, char *buffer, size_t max_len) {
-    return storage_dir_next(it, buffer, max_len); 
+    if (it == NULL || buffer == NULL || max_len == 0) return false;
+    char filename[128];
+    while (storage_dir_next(it->dir, filename, sizeof(filename))) {
+        char *ext = strrchr(filename, '.');
+        if (ext != NULL && strcmp(ext, ".json") == 0) {
+            char file_path[140];
+            snprintf(file_path, sizeof(file_path), "%s/%s", GALLERY_DIR, filename);
+            int json_file = storage_open(file_path, "rb");
+            if (json_file >= 0) {
+                size_t read_bytes = storage_read(json_file, buffer, max_len - 1);
+                storage_close(json_file);
+                if (read_bytes > 0) {
+                    buffer[read_bytes] = '\0'; 
+                    return true; 
+                }
+            }
+        }
+    }
+    return false;
 }
+
 void gallery_iterator_close(gallery_iterator_t* it) {
-    storage_dir_close(it);
+    storage_dir_close(it->dir);
 }
 
 
@@ -57,6 +77,18 @@ void gallery_upload_finish(gallery_upload_t* stream) {
     snprintf(json, sizeof(json), "{\"id\":\"%s\"}", stream->id);
     storage_write(descr, json, strlen(json));
     storage_close(descr);
+
+
+    int test_descr = storage_open(path, "rb");
+    if (test_descr >= 0) {
+        char read_buf[128] = {0};
+        storage_read(test_descr, read_buf, sizeof(read_buf) - 1);
+        storage_close(test_descr);
+        
+        ESP_LOGW("GALLERY_TEST", "Содержимое файла: %s", read_buf);
+    } else {
+        ESP_LOGE("GALLERY_TEST", "КРИТИЧЕСКАЯ ОШИБКА: Файл %s не удалось открыть после записи!", path);
+    }
 }
 
 
