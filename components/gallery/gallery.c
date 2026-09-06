@@ -77,18 +77,6 @@ void gallery_upload_finish(gallery_upload_t* stream) {
     snprintf(json, sizeof(json), "{\"id\":\"%s\"}", stream->id);
     storage_write(descr, json, strlen(json));
     storage_close(descr);
-
-
-    int test_descr = storage_open(path, "rb");
-    if (test_descr >= 0) {
-        char read_buf[128] = {0};
-        storage_read(test_descr, read_buf, sizeof(read_buf) - 1);
-        storage_close(test_descr);
-        
-        ESP_LOGW("GALLERY_TEST", "Содержимое файла: %s", read_buf);
-    } else {
-        ESP_LOGE("GALLERY_TEST", "КРИТИЧЕСКАЯ ОШИБКА: Файл %s не удалось открыть после записи!", path);
-    }
 }
 
 
