@@ -63,18 +63,18 @@ bool gallery_upload_start(gallery_upload_t* upload) {
     upload->file = storage_open(path, "wb");
     return true;
 }
-void gallery_upload_write(gallery_upload_t* stream, char* buffer, size_t received) {
-    storage_write(stream->file, buffer, received);
+void gallery_upload_write(gallery_upload_t* upload, char* buffer, size_t received) {
+    storage_write(upload->file, buffer, received);
 }   
-void gallery_upload_finish(gallery_upload_t* stream) {
-    storage_close(stream->file);
+void gallery_upload_finish(gallery_upload_t* upload) {
+    storage_close(upload->file);
     char path[128];
-    snprintf(path, sizeof(path), "%s/%s.json", GALLERY_DIR, stream->id);
+    snprintf(path, sizeof(path), "%s/%s.json", GALLERY_DIR, upload->id);
 
     // save metdata
     int descr = storage_open(path, "wb");
     char json[128];
-    snprintf(json, sizeof(json), "{\"id\":\"%s\"}", stream->id);
+    snprintf(json, sizeof(json), "{\"id\":\"%s\"}", upload->id);
     storage_write(descr, json, strlen(json));
     storage_close(descr);
 }
