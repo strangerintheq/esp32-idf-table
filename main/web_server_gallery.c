@@ -15,7 +15,7 @@ esp_err_t web_server__get_gallery_list(httpd_req_t *req) {
     char record[512];
     bool is_first = true;
     while (gallery_iterator_next(&it, record, sizeof(record))) {
-         record[sizeof(record) - 1] = '\0'; 
+        record[sizeof(record) - 1] = '\0'; 
         if (!is_first) 
             httpd_resp_send_chunk(req, ",\n", 2);
         is_first = false;

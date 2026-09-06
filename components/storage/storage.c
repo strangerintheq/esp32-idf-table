@@ -220,11 +220,13 @@ bool storage_ensure_directory(char* name) {
 
 storage_dir_t storage_dir_open(const char* dirpath) {
     char full_path[128];
-    snprintf(full_path, sizeof(full_path), "/littlefs%s", dirpath);
+    snprintf(full_path, sizeof(full_path), "/littlefs%s/", dirpath);
+    ESP_LOGI(TAG, "list directory start: %s", full_path);
     return (storage_dir_t) opendir(full_path);
 }
 
 bool storage_dir_next(storage_dir_t dir, char* filename_out, size_t max_len) {
+     
     if (dir == NULL || filename_out == NULL || max_len == 0) return false;
     
     struct dirent *entry;
@@ -232,6 +234,7 @@ bool storage_dir_next(storage_dir_t dir, char* filename_out, size_t max_len) {
         if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {
             continue;
         }
+     
         strncpy(filename_out, entry->d_name, max_len - 1);
         filename_out[max_len - 1] = '\0';
         return true;
@@ -242,5 +245,6 @@ bool storage_dir_next(storage_dir_t dir, char* filename_out, size_t max_len) {
 void storage_dir_close(storage_dir_t dir) {
     if (dir != NULL) {
         closedir((DIR*)dir);
+        //ESP_LOGI(TAG, "close directory: %s", ((DIR)dir).d_name)
     }
 }

@@ -34,7 +34,7 @@ static esp_err_t static_file_get_handler(httpd_req_t *req) {
         strcmp(req->uri, "/network") == 0 ||
         strcmp(req->uri, "/generator") == 0 
     ) {
-        snprintf(filepath, sizeof(filepath), "index.html");
+        snprintf(filepath, sizeof(filepath), "/index.html");
     } else {
         snprintf(filepath, sizeof(filepath), "%s", req->uri);
     }

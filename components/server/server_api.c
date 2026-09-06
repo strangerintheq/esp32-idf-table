@@ -11,7 +11,7 @@ void server_api_register_method(
     char* uri, 
     esp_err_t (*handler)(httpd_req_t *r)
 ) {
-    httpd_uri_t *http_method = malloc(sizeof(httpd_uri_t));
+    httpd_uri_t *http_method = calloc(1, sizeof(httpd_uri_t));
     http_method->uri = uri; 
     http_method->method = method; 
     http_method->handler = handler;
