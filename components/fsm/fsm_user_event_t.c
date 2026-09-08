@@ -21,7 +21,6 @@ const char* fsm_user_event_to_str(fsm_user_event_t e) {
 }
 
 fsm_user_event_t fsm_user_event_from_str(const char* name) {
-    // Проверяем все возможные строки
     if (strcmp(name, "start") == 0) {
         return FSM_USER_EVENT_START;
     }
@@ -40,7 +39,5 @@ fsm_user_event_t fsm_user_event_from_str(const char* name) {
     if (strcmp(name, "reboot") == 0) {
         return FSM_USER_EVENT_REBOOT; 
     }
-    
     return -1;
-
 }

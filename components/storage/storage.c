@@ -213,7 +213,7 @@ bool storage_ensure_directory(char* name) {
     struct stat st;
     if (stat(full_path, &st) != 0) {
         mkdir(full_path, 0755);
-        ESP_LOGI(TAG, "Директория /gallery создана");
+        ESP_LOGI(TAG, "Directory \"/gallery\" created");
     }
     return true;
 }

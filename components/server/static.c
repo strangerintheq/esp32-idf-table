@@ -42,7 +42,7 @@ static esp_err_t static_file_get_handler(httpd_req_t *req) {
     int opened_file_handle = storage_open(filepath, "rb");
 
     if (opened_file_handle == -1) {
-        ESP_LOGE(TAG, "Ресурс не найден через storage API: %s", filepath);
+        ESP_LOGE(TAG, "No resource: %s", filepath);
         httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "File not found");
         return ESP_FAIL;
     }
@@ -51,29 +51,28 @@ static esp_err_t static_file_get_handler(httpd_req_t *req) {
 
     char *chunk = malloc(FILE_CHUNK_SIZE);
     if (!chunk) {
-        storage_close(opened_file_handle); // Закрываем поток через storage
+        storage_close(opened_file_handle); 
         httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Memory error");
         return ESP_FAIL;
     }
 
     size_t read_bytes;
-    // Высокоскоростное бинарное блочное чтение без побайтового перебора '\n'
+
     do {
         read_bytes = storage_read(opened_file_handle, chunk, FILE_CHUNK_SIZE);
         if (read_bytes > 0) {
             if (httpd_resp_send_chunk(req, chunk, read_bytes) != ESP_OK) {
                 free(chunk);
-                storage_close(opened_file_handle); // Защита: закрываем поток через storage
-                ESP_LOGE(TAG, "Сетевой сбой при отправке чанка");
+                storage_close(opened_file_handle);
+                ESP_LOGE(TAG, "Errer sending chunk");
                 return ESP_FAIL;
             }
         }
     } while (read_bytes > 0);
 
-    // Завершаем HTTP-сессию
     httpd_resp_send_chunk(req, NULL, 0);
     free(chunk);
-    storage_close(opened_file_handle); // Освобождаем дескриптор через storage
+    storage_close(opened_file_handle); 
     return ESP_OK;
 }
 

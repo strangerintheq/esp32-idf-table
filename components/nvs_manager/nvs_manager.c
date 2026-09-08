@@ -37,7 +37,7 @@ bool nvs_manager_set_str(
 
     err = nvs_set_str(handle, key, value);
     if (err == ESP_OK) {
-        err = nvs_commit(handle); // Физический сброс данных во Flash
+        err = nvs_commit(handle); // reset flash
         ESP_LOGI(TAG, "save value %s.%s = $s", space, key, value);
     } else {
         ESP_LOGE(TAG, "%s.%s write error: %s", space, key, esp_err_to_name(err));
@@ -56,7 +56,7 @@ bool nvs_manager_get_str(
     nvs_handle_t handle;
     esp_err_t err = nvs_open(space, NVS_READONLY, &handle);
     if (err != ESP_OK) {
-        return false; // Раздел еще ни разу не создавался
+        return false; // no space
     }
 
     size_t required_size = max_len;
