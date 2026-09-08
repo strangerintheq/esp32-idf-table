@@ -39,6 +39,10 @@ void app_main(void) {
         ws_send
     );
 
+    ws_set_client_connected_callback(
+        broadcaster_on_client_connected_callback
+    );
+
     gallery_init();
 
     const int capacity = 40;

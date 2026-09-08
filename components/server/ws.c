@@ -16,6 +16,8 @@ static ws_client_t ws_clients[MAX_WS_CLIENTS];
 
 static SemaphoreHandle_t ws_clients_mutex = NULL;
 
+static void (*client_connected_callback)(int client_index) = NULL;
+
 bool lock() {
     return xSemaphoreTake(ws_clients_mutex, portMAX_DELAY) == pdTRUE;
 }
@@ -34,6 +36,7 @@ static esp_err_t add_ws_client(httpd_req_t *req) {
             ws_clients[i].server = req->handle;
             ESP_LOGI(TAG, "client #%d connected, descriptor=%d", i, fd);
             unlock();
+            client_connected_callback(i);
             return ESP_OK;
         }
     }
@@ -60,32 +63,28 @@ static esp_err_t websocket_handler(httpd_req_t *req) {
     httpd_ws_frame_t ws_pkt;
     memset(&ws_pkt, 0, sizeof(httpd_ws_frame_t));
     
-    // Получаем фрейм
     esp_err_t ret = httpd_ws_recv_frame(req, &ws_pkt, 0);
     if (ret != ESP_OK) {
         return ret;
     }
     
-    // Если есть данные - читаем их
     if (ws_pkt.len > 0) {
         uint8_t *buf = malloc(ws_pkt.len + 1);
-        if (buf == NULL) return ESP_ERR_NO_MEM;
+        if (buf == NULL) 
+            return ESP_ERR_NO_MEM;
         ws_pkt.payload = buf;
         httpd_ws_recv_frame(req, &ws_pkt, ws_pkt.len);
         buf[ws_pkt.len] = '\0';
         
-        // Обработка в зависимости от типа кадра
         switch (ws_pkt.type) {
             case HTTPD_WS_TYPE_PING:
                 ESP_LOGI(TAG,"Received PING\n");
-                // Отвечаем PONG
                 ws_pkt.type = HTTPD_WS_TYPE_PONG;
                 httpd_ws_send_frame(req, &ws_pkt);
                 break;
                 
             case HTTPD_WS_TYPE_PONG:
                 ESP_LOGI(TAG,"Received PONG\n");
-                // Обычно ничего не делаем, просто логируем
                 break;
                 
             case HTTPD_WS_TYPE_CLOSE:
@@ -97,7 +96,6 @@ static esp_err_t websocket_handler(httpd_req_t *req) {
             case HTTPD_WS_TYPE_TEXT:
             case HTTPD_WS_TYPE_BINARY:
                 ESP_LOGI(TAG,"Received data: %s\n", buf);
-                // Обработка данных...
                 httpd_ws_send_frame(req, &ws_pkt);
                 break;
             default:
@@ -137,27 +135,33 @@ void ws_init(httpd_handle_t server_handle) {
     }
 }
 
-void ws_send(const char *json) {
-    if (json == NULL) return;
+static void do_send(const char *json, int client_index) {
+    httpd_ws_frame_t frame = {
+        .type = HTTPD_WS_TYPE_TEXT,
+        .payload = (uint8_t*)json,
+        .len = strlen(json)
+    };
     
+    httpd_ws_send_frame_async(
+        ws_clients[client_index].server,
+        ws_clients[client_index].fd,
+        &frame
+    );
+}
+
+void ws_send(const char *json, int client_index) {
+    if (json == NULL) 
+        return;
     lock();
-    
     for (int i = 0; i < MAX_WS_CLIENTS; i++) {
         if (!ws_clients[i].active) 
             continue;
-        
-        httpd_ws_frame_t frame = {
-            .type = HTTPD_WS_TYPE_TEXT,
-            .payload = (uint8_t*)json,
-            .len = strlen(json)
-        };
-        
-        httpd_ws_send_frame_async(
-            ws_clients[i].server,
-            ws_clients[i].fd,
-            &frame
-        );
+        if (client_index == -1 || client_index == i)    
+            do_send(json, i);
     }
-    
     unlock();
+}
+
+void ws_set_client_connected_callback(void (*fn)(int client_index)){
+    client_connected_callback = fn;
 }
