@@ -8,8 +8,11 @@ void gallery_init();
 // get list chunked
 
 typedef struct {
-    void *dir; 
+    void *dir;
+    int file; 
+    size_t bytes_was_read;
 } gallery_iterator_t;
+
 bool gallery_iterator_start(gallery_iterator_t*);
 bool gallery_iterator_next(gallery_iterator_t*, char*, size_t);
 void gallery_iterator_close(gallery_iterator_t*);
@@ -24,6 +27,7 @@ typedef struct {
 } gallery_upload_t ;
 
 bool gallery_upload_start(gallery_upload_t*);
+bool gallery_upload_metadata_start(gallery_upload_t*);
 void gallery_upload_write(gallery_upload_t*, char*, size_t);
 void gallery_upload_finish(gallery_upload_t*);
 

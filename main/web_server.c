@@ -9,6 +9,7 @@ esp_err_t web_server__get_network_settings(httpd_req_t *req);
 
 esp_err_t web_server__get_gallery_list(httpd_req_t *req);
 esp_err_t web_server__gallery_upload(httpd_req_t *req);
+esp_err_t web_server__gallery_metadata(httpd_req_t *req);
 esp_err_t web_server__get_gallery_item(httpd_req_t *req);
 
 esp_err_t web_server__signal(httpd_req_t *req);
@@ -20,6 +21,7 @@ void web_server_init() {
 
     server_api_register_method(server_handle, HTTP_POST, "/api/gallery/list", web_server__get_gallery_list);
     server_api_register_method(server_handle, HTTP_POST, "/api/gallery/upload", web_server__gallery_upload);
+    server_api_register_method(server_handle, HTTP_POST, "/api/gallery/metadata", web_server__gallery_metadata);
     server_api_register_method(server_handle, HTTP_POST, "/api/gallery/item", web_server__get_gallery_item);
 
     server_api_register_method(server_handle, HTTP_POST, "/api/signal/*", web_server__signal);
