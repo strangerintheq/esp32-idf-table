@@ -23,8 +23,12 @@ void state_machine_init();
 void web_server_init();
 
 void app_main(void) {
-
-    printf("   ___  __  ___  ______\n  / _ \\/ / / / |/ / __/\n / // / /_/ /    / _/\n/____/\\____/_/|_/___/\n @ strangerinteq.art\n\n");
+    printf("\n\n");
+    printf("     ___  __  ___  ______  \n");
+    printf("    / _ \\/ / / / |/ / __/ \n");
+    printf("   / // / /_/ /    / _/    \n");
+    printf("  /____/\\____/_/|_/___/   \n");
+    printf("   @ strangerinteq.art     \n\n\n\n");
 
     nvs_manager_init();
 

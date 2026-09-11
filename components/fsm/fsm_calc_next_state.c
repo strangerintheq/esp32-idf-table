@@ -12,7 +12,7 @@ static fsm_state_t handle_system_event(
 
         case FSM_STATE_INITIALIZING:
             if (event == FSM_SYSTEM_EVENT_BOOT_INIT_OK)
-                return FSM_STATE_UNHOMED_IDLE;
+                return FSM_STATE_UNHOMED;
             break;   
 
         case FSM_STATE_HOMING:
@@ -37,7 +37,7 @@ static fsm_state_t handle_system_event(
 
         case FSM_STATE_STOPPING:
             if (event == FSM_SYSTEM_EVENT_RAMP_DOWN_DONE)
-                return FSM_STATE_UNHOMED_IDLE;
+                return FSM_STATE_UNHOMED;
             break; 
 
         case FSM_STATE_RUNNING:
@@ -79,7 +79,7 @@ static fsm_state_t handle_user_event(
                 return FSM_STATE_HOMING; 
             break;
         
-        case FSM_STATE_UNHOMED_IDLE:
+        case FSM_STATE_UNHOMED:
             if (event == FSM_USER_EVENT_START_HOMING)
                 return FSM_STATE_HOMING;
             break;    
@@ -87,6 +87,8 @@ static fsm_state_t handle_user_event(
         case FSM_STATE_PAUSED:
             if (event == FSM_USER_EVENT_RESUME)
                 return FSM_STATE_RESUMING;
+            if (event == FSM_USER_EVENT_STOP)
+                return FSM_STATE_STOPPING;
             break;  
 
         default: break;
