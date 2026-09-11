@@ -12,7 +12,7 @@
 #include <gallery.h>
 #include <points_provider.h>
 #include <steppers.h>
-
+#include "stdio.h"
 
 
 void delay() {
@@ -23,6 +23,8 @@ void state_machine_init();
 void web_server_init();
 
 void app_main(void) {
+
+    printf("   ___  __  ___  ______\n  / _ \\/ / / / |/ / __/\n / // / /_/ /    / _/\n/____/\\____/_/|_/___/\n @ strangerinteq.art\n\n");
 
     nvs_manager_init();
 

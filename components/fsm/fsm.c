@@ -11,10 +11,13 @@ static QueueHandle_t xFsmQueue = NULL;
 
 extern fsm_state_t fsm_calc_next_state(
     const fsm_state_t state, 
-    const fsm_event_t* event
+    const fsm_event_t* event,
+    bool (*system_has_job)()
 );
 
-static void (*fsm_publish_state)(fsm_state_t);
+static void (*fsm_publish_state)(fsm_state_t) = NULL;
+
+static bool (*system_has_job)() = NULL;
 
 static void fsm_process_message(const fsm_event_t* event) {
     
@@ -24,7 +27,7 @@ static void fsm_process_message(const fsm_event_t* event) {
 
     ESP_LOGI(TAG, "processing event: %s", evt);
 
-    fsm_state_t next_state = fsm_calc_next_state(current_state, event);
+    fsm_state_t next_state = fsm_calc_next_state(current_state, event, system_has_job);
 
     if (next_state != current_state) {
 
@@ -47,7 +50,11 @@ static void fsm_task(void *pvParameters) {
     }
 }
 
-void fsm_init(void (*publish_state)(fsm_state_t)) {
+void fsm_init(
+    void (*publish_state)(fsm_state_t),
+    bool (*has_job)()
+) {
+    system_has_job = has_job;
     fsm_publish_state = publish_state;
     xFsmQueue = xQueueCreate(10, sizeof(fsm_event_t));
     current_state = FSM_STATE_INITIALIZING;

@@ -5,7 +5,10 @@
 #include <fsm_user_event_t.h>
 #include <fsm_system_event_t.h>
 
-void fsm_init(void (*publish_state)(fsm_state_t));
+void fsm_init(
+    void (*publish_state)(fsm_state_t),
+    bool (*has_job)()
+);
 
 void fsm_post_user_event(fsm_user_event_t event, void* arg);
 

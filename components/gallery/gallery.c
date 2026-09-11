@@ -105,7 +105,7 @@ void gallery_upload_finish(gallery_upload_t* upload) {
 bool gallery_item_open(gallery_item_t* item) {
     char path[128];
     snprintf(path, sizeof(path), "%s/%s.bin", GALLERY_DIR, item->id);
-    item->file = storage_open(GALLERY_DIR, "rb");
+    item->file = storage_open(path, "rb");
     return true;
 }
 size_t gallery_item_read(gallery_item_t* item, char* buffer, size_t len) {

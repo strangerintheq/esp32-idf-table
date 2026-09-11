@@ -11,7 +11,6 @@ static int queue_batch_size;
 
 static void points_provider_task(void *pvParameters) {
     while (1) {
-        
         vTaskDelay(pdMS_TO_TICKS(100)); 
     }
 }
@@ -46,6 +45,7 @@ void points_provider_stopping() {
     ESP_LOGI(TAG, "points_provider_stopping");
 }
 
-void points_provider_set_task() {
-    ESP_LOGI(TAG, "points_provider_set_task");
+void points_provider_set_task(char* id) {
+
+    ESP_LOGI(TAG, "points_provider_set_task %s", id);
 }

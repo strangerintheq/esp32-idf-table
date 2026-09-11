@@ -35,7 +35,7 @@ void gallery_upload_finish(gallery_upload_t*);
 // get item chunked
 
 typedef struct {
-    char* id;
+    char id[9];
     int file;
 } gallery_item_t;
 

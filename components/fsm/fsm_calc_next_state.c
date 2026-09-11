@@ -53,7 +53,8 @@ static fsm_state_t handle_system_event(
 
 static fsm_state_t handle_user_event(
     const fsm_state_t state, 
-    const fsm_user_event_t event
+    const fsm_user_event_t event,
+    bool (*system_has_job)()
 ) {
     if (event == FSM_USER_EVENT_REBOOT) {
         return FSM_STATE_REBOOTING;
@@ -68,8 +69,12 @@ static fsm_state_t handle_user_event(
             break;  
 
         case FSM_STATE_IDLE:
-            if (event == FSM_USER_EVENT_START)
-                return FSM_STATE_STARTING;
+            if (event == FSM_USER_EVENT_START){
+                if (system_has_job())
+                    return FSM_STATE_STARTING;
+                else
+                    return FSM_STATE_IDLE;  
+            }
             if (event == FSM_USER_EVENT_START_HOMING)   
                 return FSM_STATE_HOMING; 
             break;
@@ -92,11 +97,12 @@ static fsm_state_t handle_user_event(
 
 fsm_state_t fsm_calc_next_state(
     const fsm_state_t state, 
-    const fsm_event_t* event
+    const fsm_event_t* event,
+    bool (*system_has_job)()
 ) {
     if (event->type == FSM_EVENT_TYPE_SYSTEM_REPORT) {
         return handle_system_event(state, event->system_event);    
     } else {
-        return handle_user_event(state, event->user_event);       
+        return handle_user_event(state, event->user_event, system_has_job);       
     }
 }

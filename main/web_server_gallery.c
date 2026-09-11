@@ -3,6 +3,8 @@
 #include <gallery.h>
 #include "esp_random.h" 
 #include "esp_log.h"
+#include "points_provider.h"
+#include "broadcaster.h"
 
 static const char *TAG = "[main/web_server_gallery.c]";
 
@@ -35,10 +37,6 @@ esp_err_t web_server__get_gallery_list(httpd_req_t *req) {
     return ESP_OK;
 }
 
-
-
-
-
 esp_err_t web_server__gallery_upload(httpd_req_t *req) {
     char buf[SCRATCH_BUFSIZE];
     int received;
@@ -52,7 +50,7 @@ esp_err_t web_server__gallery_upload(httpd_req_t *req) {
             if (received == HTTPD_SOCK_ERR_TIMEOUT) {
                 continue;
             }
-            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Failed to receive post data");
+            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "{\"error\":\"Failed to receive post data\"}");
             return ESP_FAIL;
         }
         gallery_upload_write(&upload, buf, received);
@@ -62,12 +60,11 @@ esp_err_t web_server__gallery_upload(httpd_req_t *req) {
     // response
     httpd_resp_set_type(req, "application/json");
     httpd_resp_set_status(req, "201 Created");
-    char response[32];
-    snprintf(response, sizeof(response), "{\"id\":\"%s\"}", upload.id);
+    char response[64];
+    snprintf(response, sizeof(response), "{\"result\":\"Binary uploaded successfully\",\"id\":\"%s\"}", upload.id);
     httpd_resp_sendstr(req, response);
     return ESP_OK;
 }
-
 
 esp_err_t web_server__gallery_metadata(httpd_req_t *req) {
     char buf[SCRATCH_BUFSIZE];
@@ -75,8 +72,8 @@ esp_err_t web_server__gallery_metadata(httpd_req_t *req) {
     size_t total_len = req->content_len;
     size_t remaining = total_len;
     gallery_upload_t upload;
-    if (httpd_req_get_hdr_value_str(req, "X-Id", upload.id, 8) != ESP_OK) {
-        httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "Missing or invalid X-Id header");
+    if (httpd_req_get_hdr_value_str(req, "X-Id", upload.id, 9) != ESP_OK) {
+        httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "{\"error\":\"Missing X-Id header\"}");
         return ESP_ERR_NOT_FOUND;
     } 
     ESP_LOGI(TAG, "metadata upload id: %s", upload.id);
@@ -94,28 +91,27 @@ esp_err_t web_server__gallery_metadata(httpd_req_t *req) {
         remaining -= received;
     }
     gallery_upload_finish(&upload);
+
+    httpd_resp_set_type(req, "application/json");
     httpd_resp_set_status(req, "201 Created");
-    httpd_resp_sendstr(req, "Metadata uploaded successfully");
+    httpd_resp_sendstr(req, "{\"result\":\"Metadata uploaded successfully\"}");
     return ESP_OK;
 }
 
 
-#define FILE_CHUNK_SIZE 1024
-
 esp_err_t web_server__get_gallery_item(httpd_req_t *req) {
-    char item_id[64];
-    if (httpd_query_key_value(req->uri, "id", item_id, sizeof(item_id)) != ESP_OK) {
-        httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "Missing 'id' parameter");
-        return ESP_FAIL;
-    }
     gallery_item_t item;
-    item.id = item_id;
+    if (httpd_req_get_hdr_value_str(req, "X-Id", item.id, 9) != ESP_OK) {
+        httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "{\"error\":\"Missing X-Id header\"}");
+        return ESP_ERR_NOT_FOUND;
+    } 
+    ESP_LOGI(TAG, "get item id: %s", item.id);
     if (!gallery_item_open(&item)) {
         httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "Gallery item not found");
         return ESP_FAIL;
     }
-    httpd_resp_set_type(req, "image/jpeg"); 
-    char buffer[FILE_CHUNK_SIZE];
+    httpd_resp_set_type(req, "application/octet-stream"); 
+    char buffer[SCRATCH_BUFSIZE];
     int read_bytes;
     esp_err_t res = ESP_OK;
     while ((read_bytes = gallery_item_read(&item, buffer, sizeof(buffer))) > 0) {
@@ -126,7 +122,21 @@ esp_err_t web_server__get_gallery_item(httpd_req_t *req) {
     }
     gallery_item_close(&item);
     httpd_resp_send_chunk(req, NULL, 0);
-    return res == ESP_OK ? ESP_OK : ESP_FAIL;
+    return ESP_OK;
 }
 
 
+esp_err_t web_server__gallery_activate(httpd_req_t *req) {
+    char id[9];
+    if (httpd_req_get_hdr_value_str(req, "X-Id", id, 9) != ESP_OK) {
+        httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "{\"error\":\"Missing X-Id header\"}");
+        return ESP_ERR_NOT_FOUND;
+    } 
+    points_provider_set_task(id);
+    broadcaster_publish("task", id);
+
+    httpd_resp_set_type(req, "application/json");
+    httpd_resp_set_status(req, "200");
+    httpd_resp_sendstr(req, "{\"result\":\"Task loaded successfully\"}");
+    return ESP_OK;
+}
